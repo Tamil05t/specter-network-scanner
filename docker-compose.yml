@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  specter:
+    build: .
+    container_name: specter-scanner
+    network_mode: "host"
+    environment:
+      - SPECTER_PROFILE=standard
+      - SPECTER_USE_UVLOOP=1
+    env_file:
+      - .env
+    volumes:
+      - ./reports:/app/reports
+      - ./config.yaml:/app/config.yaml:ro
+      - ./cache:/app/.specter-cache
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G

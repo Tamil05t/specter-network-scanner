@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build artifacts
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pytest -m "not slow"
+      - name: Build Docker image
+        run: docker build -t specter:${{ github.ref_name }} .
+      - name: Login to registry
+        if: ${{ secrets.DOCKER_USERNAME != '' }}
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Push Docker image
+        if: ${{ secrets.DOCKER_USERNAME != '' }}
+        run: |
+          docker tag specter:${{ github.ref_name }} ${{ secrets.DOCKER_USERNAME }}/specter:${{ github.ref_name }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/specter:${{ github.ref_name }}

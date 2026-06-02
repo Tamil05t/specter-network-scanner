@@ -1,0 +1,58 @@
+specter:
+  version: "1.0.0"
+
+scan_defaults:
+  ports: "1-1000,1433,1521,3306,3389,5432,5900,6379,8080,8443,9000,9200,11211,27017"
+  timeout: 2000
+  concurrency: 100
+  rate_limit: 150
+  retries: 2
+  syn_scan: false
+  decoy_count: 3
+
+profiles:
+  stealth:
+    rate_limit: 10
+    scan_delay: 500
+    randomize_ports: true
+    fragment_packets: true
+    decoy_scan: false
+    syn_scan: false
+
+  standard:
+    rate_limit: 100
+    scan_delay: 0
+    randomize_ports: false
+    syn_scan: false
+
+  aggressive:
+    rate_limit: 500
+    concurrency: 200
+    timeout: 1000
+    syn_scan: true
+    decoy_scan: true
+
+  comprehensive:
+    ports: "1-65535"
+    rate_limit: 200
+    all_checks: true
+    os_detection: true
+    vuln_scan: true
+
+exploit_db:
+  auto_update: true
+  cache_dir: "~/.specter/exploitdb"
+  update_interval_hours: 24
+
+output:
+  default_format: "html"
+  report_dir: "./reports"
+  save_raw_data: true
+  compress_reports: false
+
+safety:
+  require_confirmation: true
+  max_credential_attempts: 5
+  banned_subnets:
+    - "10.0.0.0/8"
+  disclaimer_shown: true
