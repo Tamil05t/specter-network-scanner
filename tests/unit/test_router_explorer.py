@@ -250,6 +250,7 @@ async def test_max_attempts_enforced(monkeypatch):
         Note:
             Only the `headers` attribute is used.
         """
+
         headers = {}
 
     await explorer.test_default_credentials("127.0.0.1", "tp-link", FakeSession(), rate_limiter=_FakeLimiter())
@@ -318,11 +319,10 @@ async def test_default_credential_match(monkeypatch):
         Note:
             Only the `headers` attribute is used.
         """
+
         headers = {}
 
-    creds = await explorer.test_default_credentials(
-        "127.0.0.1", "tp-link", FakeSession(), rate_limiter=_FakeLimiter()
-    )
+    creds = await explorer.test_default_credentials("127.0.0.1", "tp-link", FakeSession(), rate_limiter=_FakeLimiter())
     assert creds is not None
 
 
@@ -355,7 +355,7 @@ class SimpleFakeResponse:
         self.status = status
         self._text = text_value
 
-    async def text(self, errors='ignore'):
+    async def text(self, errors="ignore"):
         return self._text
 
     async def __aenter__(self):
@@ -380,62 +380,64 @@ class SimpleFakeSession:
 @pytest.mark.asyncio
 async def test_wps_pin_vulnerability_check():
     explorer = RouterExplorer()
-    session = SimpleFakeSession(mapping={'/wps': 'WPS PIN prompt'})
-    assert await explorer._check_wps_pin('192.168.1.1', session) is True
+    session = SimpleFakeSession(mapping={"/wps": "WPS PIN prompt"})
+    assert await explorer._check_wps_pin("192.168.1.1", session) is True
 
 
 @pytest.mark.asyncio
 async def test_csrf_detection_heuristic():
     explorer = RouterExplorer()
     html = '<form><input name="user" /></form>'
-    session = SimpleFakeSession(mapping={'/': html})
-    assert await explorer._check_csrf_weakness('192.168.1.1', session) is True
+    session = SimpleFakeSession(mapping={"/": html})
+    assert await explorer._check_csrf_weakness("192.168.1.1", session) is True
 
 
 @pytest.mark.asyncio
 async def test_firmware_version_matching_detects_known():
     explorer = RouterExplorer()
-    html = 'Device page: firmware version: 1.0.0'
-    session = SimpleFakeSession(mapping={'/': html})
-    res = await explorer._check_firmware_version('192.168.1.1', session)
-    assert res is not None and 'Firmware' in res
+    html = "Device page: firmware version: 1.0.0"
+    session = SimpleFakeSession(mapping={"/": html})
+    res = await explorer._check_firmware_version("192.168.1.1", session)
+    assert res is not None and "Firmware" in res
 
 
 @pytest.mark.asyncio
 async def test_extract_wifi_credentials_and_port_forwarding():
     explorer = RouterExplorer()
-    mapping = {'/wireless': 'SSID: mynet passphrase: secret', '/port_forwarding': 'port forward rules'}
+    mapping = {"/wireless": "SSID: mynet passphrase: secret", "/port_forwarding": "port forward rules"}
     session = SimpleFakeSession(mapping=mapping)
-    info = await explorer._gather_admin_info('192.168.1.1', 'admin', 'admin', session)
-    assert any('WiFi' in s or 'credential' in s.lower() or 'Port forwarding' in s for s in info)
+    info = await explorer._gather_admin_info("192.168.1.1", "admin", "admin", session)
+    assert any("WiFi" in s or "credential" in s.lower() or "Port forwarding" in s for s in info)
 
 
 @pytest.mark.asyncio
 async def test_port_forwarding_discovery_endpoint():
     explorer = RouterExplorer()
-    mapping = {'/portforward': 'Port forward settings and rules'}
+    mapping = {"/portforward": "Port forward settings and rules"}
     session = SimpleFakeSession(mapping=mapping)
-    info = await explorer._gather_admin_info('192.168.1.1', 'admin', 'admin', session)
-    assert any('Port forwarding' in s for s in info)
+    info = await explorer._gather_admin_info("192.168.1.1", "admin", "admin", session)
+    assert any("Port forwarding" in s for s in info)
+
 
 from unittest.mock import AsyncMock, MagicMock
 from specter.models.dataclasses import Device
 import aiohttp
-from specter.core.rate_limiter import RateLimiter
+
 
 @pytest.mark.asyncio
 async def test_explore_mocked(monkeypatch):
     explorer = RouterExplorer()
-    explorer.discover_gateway = AsyncMock(return_value='192.168.1.1')
-    explorer.detect_admin_panels = AsyncMock(return_value=['/'])
+    explorer.discover_gateway = AsyncMock(return_value="192.168.1.1")
+    explorer.detect_admin_panels = AsyncMock(return_value=["/"])
     mock_fingerprint = MagicMock()
     mock_fingerprint.vendor = "TP-Link"
     explorer.grab_router_fingerprint = AsyncMock(return_value=mock_fingerprint)
     explorer.test_default_credentials = AsyncMock(return_value=None)
     explorer.router_vuln_checks = AsyncMock(return_value=[])
-    dev = Device('192.168.1.1')
+    dev = Device("192.168.1.1")
     res = await explorer.explore(dev, aiohttp.ClientSession(), MagicMock())
     assert res is not None
+
 
 @pytest.mark.asyncio
 async def test_vuln_checks(monkeypatch):
@@ -448,8 +450,9 @@ async def test_vuln_checks(monkeypatch):
     explorer._check_tr069 = AsyncMock(return_value=True)
     explorer._check_snmp_write = AsyncMock(return_value=True)
     explorer._check_upnp_exposed = AsyncMock(return_value=True)
-    res = await explorer.router_vuln_checks('127.0.0.1', aiohttp.ClientSession(), MagicMock())
+    res = await explorer.router_vuln_checks("127.0.0.1", aiohttp.ClientSession(), MagicMock())
     assert res is not None
+
 
 @pytest.mark.asyncio
 async def test_upnp_discover(monkeypatch):
@@ -458,17 +461,19 @@ async def test_upnp_discover(monkeypatch):
     res = await explorer.upnp_discover()
     assert isinstance(res, list)
 
+
 from specter.scanners.router_explorer import RouterExplorer
 from unittest.mock import AsyncMock, MagicMock
+
 
 @pytest.mark.asyncio
 async def test_router_edge_cases2():
     explorer = RouterExplorer()
     try:
         explorer._tcp_probe = AsyncMock(return_value=True)
-        res = await explorer._tcp_probe('127.0.0.1', 80)
+        res = await explorer._tcp_probe("127.0.0.1", 80)
         assert res is True
-        
+
         # Additional coverage for upnp_discover
         explorer._ssdp_query = AsyncMock(return_value=[{"Server": "Test"}])
         res2 = await explorer.upnp_discover()

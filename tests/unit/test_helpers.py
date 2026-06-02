@@ -1,6 +1,5 @@
-
-import pytest
 from specter.utils.helpers import chunked
+
 
 def test_helpers():
     try:

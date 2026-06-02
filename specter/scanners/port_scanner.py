@@ -1,20 +1,23 @@
 """Async port scanning module with service detection."""
+
 from __future__ import annotations
 import asyncio
 import random
 import re
-import socket
 import time
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 from specter.core.rate_limiter import RateLimiter
 from specter.models.dataclasses import Device, Service
+
 EventCallback = Callable[[Dict[str, str]], Awaitable[None]]
+
 
 @dataclass
 class CircuitBreakerState:
     failures: int = 0
     open_until: float = 0.0
+
 
 class PortScanner:
     """Async TCP/UDP port scanner with service detection and banner grabbing.
@@ -24,7 +27,25 @@ class PortScanner:
     behind an explicit opt-in hook.
     """
 
-    def __init__(self, timeout: float=1.5, concurrency: int=100, scan_delay: float=0.0, max_retries: int=2, backoff_base: float=0.25, circuit_breaker_failures: int=6, circuit_breaker_timeout: float=20.0, syn_scan: bool=False, decoy_scan: bool=False, decoy_count: int=3, fragment_packets: bool=False, fragment_size: int=8, banner_pool_size: int=50, randomize_ports: bool=True, on_event: Optional[EventCallback]=None, correlation_queue: Optional[asyncio.Queue[Service]]=None) -> None:
+    def __init__(
+        self,
+        timeout: float = 1.5,
+        concurrency: int = 100,
+        scan_delay: float = 0.0,
+        max_retries: int = 2,
+        backoff_base: float = 0.25,
+        circuit_breaker_failures: int = 6,
+        circuit_breaker_timeout: float = 20.0,
+        syn_scan: bool = False,
+        decoy_scan: bool = False,
+        decoy_count: int = 3,
+        fragment_packets: bool = False,
+        fragment_size: int = 8,
+        banner_pool_size: int = 50,
+        randomize_ports: bool = True,
+        on_event: Optional[EventCallback] = None,
+        correlation_queue: Optional[asyncio.Queue[Service]] = None,
+    ) -> None:
         """Initialize port scanner settings.
 
         Args:
@@ -120,7 +141,9 @@ class PortScanner:
         """
         self._pause_event.set()
 
-    async def scan_tcp_ports(self, target: str, ports: Sequence[int], timeout: Optional[float]=None, concurrency: Optional[int]=None) -> List[Service]:
+    async def scan_tcp_ports(
+        self, target: str, ports: Sequence[int], timeout: Optional[float] = None, concurrency: Optional[int] = None
+    ) -> List[Service]:
         """Scan TCP ports and return Service records.
 
         Args:
@@ -142,7 +165,7 @@ class PortScanner:
             SYN scan is used when enabled and available.
         """
         if self._is_circuit_open(target):
-            await self._emit_event('circuit_open', target)
+            await self._emit_event("circuit_open", target)
             return []
         ordered_ports = self._prioritize_ports(list(ports)) if self._randomize_ports else list(ports)
         sem = asyncio.Semaphore(concurrency or self._concurrency)
@@ -171,10 +194,11 @@ class PortScanner:
                     return
                 results.append(service)
                 await self._push_service(service)
+
         await asyncio.gather(*(scan_port(port) for port in ordered_ports))
         return results
 
-    async def scan_udp_ports(self, target: str, ports: Sequence[int], timeout: Optional[float]=None) -> List[Service]:
+    async def scan_udp_ports(self, target: str, ports: Sequence[int], timeout: Optional[float] = None) -> List[Service]:
         """Best-effort UDP scan with timeout-based inference.
 
         Args:
@@ -195,7 +219,7 @@ class PortScanner:
             ICMP-based inference is used when available.
         """
         if self._is_circuit_open(target):
-            await self._emit_event('circuit_open', target)
+            await self._emit_event("circuit_open", target)
             return []
         sem = asyncio.Semaphore(self._concurrency)
         timeout_value = timeout or self._timeout
@@ -223,11 +247,12 @@ class PortScanner:
                     return
                 results.append(service)
                 await self._push_service(service)
+
         ordered_ports = self._prioritize_ports(list(ports)) if self._randomize_ports else list(ports)
         await asyncio.gather(*(scan_port(port) for port in ordered_ports))
         return results
 
-    async def grab_banner(self, ip: str, port: int, protocol: str='tcp') -> str:
+    async def grab_banner(self, ip: str, port: int, protocol: str = "tcp") -> str:
         """Connect and grab a banner using protocol-specific probes.
 
         Args:
@@ -247,13 +272,13 @@ class PortScanner:
         Note:
             Uses a small connection pool for banner grabs.
         """
-        if protocol.lower() == 'udp':
-            return ''
+        if protocol.lower() == "udp":
+            return ""
         async with self._banner_sem:
             reader, writer = await self._get_pooled_connection(ip, port)
             if reader is None or writer is None:
-                return ''
-            banner = ''
+                return ""
+            banner = ""
             try:
                 probe = self._build_probe(port)
                 if probe:
@@ -261,10 +286,10 @@ class PortScanner:
                     await writer.drain()
                 banner = await asyncio.wait_for(reader.read(512), timeout=self._timeout)
             except Exception:
-                banner = b''
+                banner = b""
             finally:
                 await self._release_pooled_connection(ip, port, reader, writer)
-        return banner.decode(errors='ignore').strip()
+        return banner.decode(errors="ignore").strip()
 
     async def detect_service(self, ip: str, port: int, banner: str) -> Service:
         """Identify service and version from banner using regex patterns.
@@ -286,21 +311,32 @@ class PortScanner:
         Note:
             Returns "unknown" when no signature matches.
         """
-        service_name = 'unknown'
+        service_name = "unknown"
         version: Optional[str] = None
         for name, patterns in self._service_fingerprints.items():
             for pattern in patterns:
                 match = pattern.search(banner)
                 if match:
                     service_name = name
-                    if match.groupdict().get('version'):
-                        version = match.groupdict()['version']
+                    if match.groupdict().get("version"):
+                        version = match.groupdict()["version"]
                     elif match.groups():
                         version = match.groups()[0]
-                    return Service(port=port, protocol='tcp', service_name=service_name, version=version, banner=banner, cpe_guess=None)
-        return Service(port=port, protocol='tcp', service_name=service_name, version=version, banner=banner, cpe_guess=None)
+                    return Service(
+                        port=port,
+                        protocol="tcp",
+                        service_name=service_name,
+                        version=version,
+                        banner=banner,
+                        cpe_guess=None,
+                    )
+        return Service(
+            port=port, protocol="tcp", service_name=service_name, version=version, banner=banner, cpe_guess=None
+        )
 
-    async def scan_device(self, device: Device, ports: Iterable[int], rate_limiter: Optional[RateLimiter]=None) -> Device:
+    async def scan_device(
+        self, device: Device, ports: Iterable[int], rate_limiter: Optional[RateLimiter] = None
+    ) -> Device:
         """Scan a device and populate open ports and services.
 
         Args:
@@ -356,13 +392,13 @@ class PortScanner:
                     reader, writer = await asyncio.wait_for(asyncio.open_connection(target, port), timeout=timeout)
                     writer.close()
                     await writer.wait_closed()
-                banner = await self.grab_banner(target, port, 'tcp')
+                banner = await self.grab_banner(target, port, "tcp")
                 service = await self.detect_service(target, port, banner)
                 self._record_success(target)
-                await self._emit_event('port_open', target, port)
+                await self._emit_event("port_open", target, port)
                 return service
             except PermissionError:
-                await self._emit_event('permission', target, port)
+                await self._emit_event("permission", target, port)
                 self._record_failure(target)
                 return None
             except (ConnectionRefusedError, TimeoutError, OSError):
@@ -398,22 +434,33 @@ class PortScanner:
             try:
                 if self._scapy_available():
                     result = await asyncio.to_thread(self._udp_probe_icmp, target, port, timeout)
-                    if result == 'closed':
+                    if result == "closed":
                         self._record_failure(target)
                         return None
                     self._record_success(target)
-                    await self._emit_event('udp_probe', target, port)
-                    return Service(port=port, protocol='udp', service_name='open|filtered', version=None, banner=None, cpe_guess=None)
+                    await self._emit_event("udp_probe", target, port)
+                    return Service(
+                        port=port,
+                        protocol="udp",
+                        service_name="open|filtered",
+                        version=None,
+                        banner=None,
+                        cpe_guess=None,
+                    )
                 loop = asyncio.get_running_loop()
-                transport, protocol = await loop.create_datagram_endpoint(asyncio.DatagramProtocol, remote_addr=(target, port))
-                transport.sendto(b'\x00')
+                transport, protocol = await loop.create_datagram_endpoint(
+                    asyncio.DatagramProtocol, remote_addr=(target, port)
+                )
+                transport.sendto(b"\x00")
                 await asyncio.sleep(timeout)
                 transport.close()
                 self._record_success(target)
-                await self._emit_event('udp_probe', target, port)
-                return Service(port=port, protocol='udp', service_name='open|filtered', version=None, banner=None, cpe_guess=None)
+                await self._emit_event("udp_probe", target, port)
+                return Service(
+                    port=port, protocol="udp", service_name="open|filtered", version=None, banner=None, cpe_guess=None
+                )
             except PermissionError:
-                await self._emit_event('permission', target, port)
+                await self._emit_event("permission", target, port)
                 self._record_failure(target)
                 return None
             except (TimeoutError, OSError):
@@ -473,7 +520,7 @@ class PortScanner:
         except Exception:
             return
 
-    async def _emit_event(self, event: str, target: str, port: Optional[int]=None) -> None:
+    async def _emit_event(self, event: str, target: str, port: Optional[int] = None) -> None:
         """Emit structured events to the optional callback.
 
         Args:
@@ -495,9 +542,9 @@ class PortScanner:
         """
         if self._on_event is None:
             return
-        payload = {'event': event, 'target': target}
+        payload = {"event": event, "target": target}
         if port is not None:
-            payload['port'] = str(port)
+            payload["port"] = str(port)
         try:
             await self._on_event(payload)
         except Exception:
@@ -521,7 +568,7 @@ class PortScanner:
         Note:
             Backoff is capped at 5 seconds.
         """
-        delay = self._backoff_base * 2 ** attempt
+        delay = self._backoff_base * 2**attempt
         await asyncio.sleep(min(delay, 5.0))
 
     def _is_circuit_open(self, target: str) -> bool:
@@ -609,44 +656,91 @@ class PortScanner:
         Note:
             Unknown ports return an empty payload.
         """
-        probe_map: Dict[int, bytes] = {21: b'QUIT\r\n', 22: b'\r\n', 25: b'EHLO specter\r\n', 80: b'GET / HTTP/1.0\r\nHost: localhost\r\n\r\n', 110: b'QUIT\r\n', 143: b'a1 CAPABILITY\r\n', 443: b'GET / HTTP/1.0\r\nHost: localhost\r\n\r\n', 3306: b'\x00', 6379: b'PING\r\n', 27017: b'\x00', 5432: b'\x00'}
-        return probe_map.get(port, b'')
+        probe_map: Dict[int, bytes] = {
+            21: b"QUIT\r\n",
+            22: b"\r\n",
+            25: b"EHLO specter\r\n",
+            80: b"GET / HTTP/1.0\r\nHost: localhost\r\n\r\n",
+            110: b"QUIT\r\n",
+            143: b"a1 CAPABILITY\r\n",
+            443: b"GET / HTTP/1.0\r\nHost: localhost\r\n\r\n",
+            3306: b"\x00",
+            6379: b"PING\r\n",
+            27017: b"\x00",
+            5432: b"\x00",
+        }
+        return probe_map.get(port, b"")
 
     @staticmethod
     def _build_fingerprints() -> Dict[str, List[re.Pattern[str]]]:
         """Build regex fingerprints for service detection.
 
-Args:
-    None
+        Args:
+            None
 
-Returns:
-    Any: Description of return value.
+        Returns:
+            Any: Description of return value.
 
-Raises:
-    Exception: On unexpected errors.
+        Raises:
+            Exception: On unexpected errors.
 
-Example:
-    >>> # Example usage of _build_fingerprints
-    >>> pass"""
-        return {'http': [re.compile('Server: Apache/?(?P<version>[\\d\\.]+)?', re.IGNORECASE), re.compile('Server: nginx/?(?P<version>[\\d\\.]+)?', re.IGNORECASE), re.compile('Server: Microsoft-IIS/(?P<version>[\\d\\.]+)', re.IGNORECASE), re.compile('Apache Tomcat/(?P<version>[\\d\\.]+)', re.IGNORECASE), re.compile('Express', re.IGNORECASE)], 'ssh': [re.compile('OpenSSH[_-](?P<version>[\\d\\.p]+)', re.IGNORECASE), re.compile('Dropbear[_-](?P<version>[\\d\\.]+)', re.IGNORECASE)], 'ftp': [re.compile('vsftpd (?P<version>[\\d\\.]+)', re.IGNORECASE), re.compile('ProFTPD (?P<version>[\\d\\.]+)', re.IGNORECASE), re.compile('Pure-FTPd', re.IGNORECASE)], 'mysql': [re.compile('MySQL', re.IGNORECASE)], 'postgres': [re.compile('PostgreSQL', re.IGNORECASE)], 'mongodb': [re.compile('MongoDB', re.IGNORECASE)], 'redis': [re.compile('redis', re.IGNORECASE)], 'elasticsearch': [re.compile('elasticsearch', re.IGNORECASE)], 'cassandra': [re.compile('cassandra', re.IGNORECASE)], 'smtp': [re.compile('ESMTP', re.IGNORECASE)], 'pop3': [re.compile('\\+OK', re.IGNORECASE)], 'imap': [re.compile('IMAP', re.IGNORECASE)], 'telnet': [re.compile('telnet', re.IGNORECASE)], 'rdp': [re.compile('RDP', re.IGNORECASE)], 'vnc': [re.compile('RFB (?P<version>[\\d\\.]+)', re.IGNORECASE)], 'smb': [re.compile('SMB', re.IGNORECASE)], 'dns': [re.compile('BIND', re.IGNORECASE)], 'ntp': [re.compile('NTP', re.IGNORECASE)], 'sip': [re.compile('SIP', re.IGNORECASE)], 'rtsp': [re.compile('RTSP', re.IGNORECASE)]}
+        Example:
+            >>> # Example usage of _build_fingerprints
+            >>> pass"""
+        return {
+            "http": [
+                re.compile("Server: Apache/?(?P<version>[\\d\\.]+)?", re.IGNORECASE),
+                re.compile("Server: nginx/?(?P<version>[\\d\\.]+)?", re.IGNORECASE),
+                re.compile("Server: Microsoft-IIS/(?P<version>[\\d\\.]+)", re.IGNORECASE),
+                re.compile("Apache Tomcat/(?P<version>[\\d\\.]+)", re.IGNORECASE),
+                re.compile("Express", re.IGNORECASE),
+            ],
+            "ssh": [
+                re.compile("OpenSSH[_-](?P<version>[\\d\\.p]+)", re.IGNORECASE),
+                re.compile("Dropbear[_-](?P<version>[\\d\\.]+)", re.IGNORECASE),
+            ],
+            "ftp": [
+                re.compile("vsftpd (?P<version>[\\d\\.]+)", re.IGNORECASE),
+                re.compile("ProFTPD (?P<version>[\\d\\.]+)", re.IGNORECASE),
+                re.compile("Pure-FTPd", re.IGNORECASE),
+            ],
+            "mysql": [re.compile("MySQL", re.IGNORECASE)],
+            "postgres": [re.compile("PostgreSQL", re.IGNORECASE)],
+            "mongodb": [re.compile("MongoDB", re.IGNORECASE)],
+            "redis": [re.compile("redis", re.IGNORECASE)],
+            "elasticsearch": [re.compile("elasticsearch", re.IGNORECASE)],
+            "cassandra": [re.compile("cassandra", re.IGNORECASE)],
+            "smtp": [re.compile("ESMTP", re.IGNORECASE)],
+            "pop3": [re.compile("\\+OK", re.IGNORECASE)],
+            "imap": [re.compile("IMAP", re.IGNORECASE)],
+            "telnet": [re.compile("telnet", re.IGNORECASE)],
+            "rdp": [re.compile("RDP", re.IGNORECASE)],
+            "vnc": [re.compile("RFB (?P<version>[\\d\\.]+)", re.IGNORECASE)],
+            "smb": [re.compile("SMB", re.IGNORECASE)],
+            "dns": [re.compile("BIND", re.IGNORECASE)],
+            "ntp": [re.compile("NTP", re.IGNORECASE)],
+            "sip": [re.compile("SIP", re.IGNORECASE)],
+            "rtsp": [re.compile("RTSP", re.IGNORECASE)],
+        }
 
     def _scapy_available(self) -> bool:
         """Check if scapy is available for raw scans.
 
-Args:
-    None
+        Args:
+            None
 
-Returns:
-    Any: Description of return value.
+        Returns:
+            Any: Description of return value.
 
-Raises:
-    Exception: On unexpected errors.
+        Raises:
+            Exception: On unexpected errors.
 
-Example:
-    >>> # Example usage of _scapy_available
-    >>> pass"""
+        Example:
+            >>> # Example usage of _scapy_available
+            >>> pass"""
         try:
-            import scapy.all as _
+            pass
+
             return True
         except Exception:
             return False
@@ -673,7 +767,8 @@ Example:
         """
         try:
             from scapy.all import IP, TCP, fragment, send, sr1
-            pkt = IP(dst=target) / TCP(dport=port, flags='S')
+
+            pkt = IP(dst=target) / TCP(dport=port, flags="S")
             if self._decoy_scan and self._decoy_count > 0:
                 self._send_decoys(target, port)
             if self._fragment_packets:
@@ -707,9 +802,10 @@ Example:
         """
         try:
             from scapy.all import ICMP, IP, UDP, fragment, send, sr1
+
             pkt = IP(dst=target) / UDP(dport=port)
             if self._decoy_scan and self._decoy_count > 0:
-                self._send_decoys(target, port, proto='udp')
+                self._send_decoys(target, port, proto="udp")
             if self._fragment_packets:
                 for frag in fragment(pkt, fragsize=self._fragment_size):
                     send(frag, verbose=False)
@@ -717,41 +813,44 @@ Example:
             if reply and reply.haslayer(ICMP):
                 icmp = reply.getlayer(ICMP)
                 if int(icmp.type) == 3 and int(icmp.code) in {1, 2, 3, 9, 10, 13}:
-                    return 'closed'
-            return 'open|filtered'
+                    return "closed"
+            return "open|filtered"
         except Exception:
-            return 'open|filtered'
+            return "open|filtered"
 
-    def _send_decoys(self, target: str, port: int, proto: str='tcp') -> None:
+    def _send_decoys(self, target: str, port: int, proto: str = "tcp") -> None:
         """Send decoy packets with spoofed source IPs.
 
-Args:
-    target (Any): Description of target.
-    port (Any): Description of port.
-    proto (Any): Description of proto.
+        Args:
+            target (Any): Description of target.
+            port (Any): Description of port.
+            proto (Any): Description of proto.
 
-Returns:
-    Any: Description of return value.
+        Returns:
+            Any: Description of return value.
 
-Raises:
-    Exception: On unexpected errors.
+        Raises:
+            Exception: On unexpected errors.
 
-Example:
-    >>> # Example usage of _send_decoys
-    >>> pass"""
+        Example:
+            >>> # Example usage of _send_decoys
+            >>> pass"""
         try:
             from scapy.all import IP, TCP, UDP, send
+
             for _ in range(self._decoy_count):
-                spoof = f'{random.randint(11, 223)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(1, 254)}'
-                if proto == 'udp':
+                spoof = f"{random.randint(11, 223)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(1, 254)}"
+                if proto == "udp":
                     pkt = IP(src=spoof, dst=target) / UDP(dport=port)
                 else:
-                    pkt = IP(src=spoof, dst=target) / TCP(dport=port, flags='S')
+                    pkt = IP(src=spoof, dst=target) / TCP(dport=port, flags="S")
                 send(pkt, verbose=False)
         except Exception:
             return None
 
-    async def _get_pooled_connection(self, ip: str, port: int) -> Tuple[Optional[asyncio.StreamReader], Optional[asyncio.StreamWriter]]:
+    async def _get_pooled_connection(
+        self, ip: str, port: int
+    ) -> Tuple[Optional[asyncio.StreamReader], Optional[asyncio.StreamWriter]]:
         """Fetch or create a pooled TCP connection.
 
         Args:
@@ -781,24 +880,26 @@ Example:
         except Exception:
             return (None, None)
 
-    async def _release_pooled_connection(self, ip: str, port: int, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    async def _release_pooled_connection(
+        self, ip: str, port: int, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ) -> None:
         """Release a pooled connection with TTL cleanup.
 
-Args:
-    ip (Any): Description of ip.
-    port (Any): Description of port.
-    reader (Any): Description of reader.
-    writer (Any): Description of writer.
+        Args:
+            ip (Any): Description of ip.
+            port (Any): Description of port.
+            reader (Any): Description of reader.
+            writer (Any): Description of writer.
 
-Returns:
-    Any: Description of return value.
+        Returns:
+            Any: Description of return value.
 
-Raises:
-    Exception: On unexpected errors.
+        Raises:
+            Exception: On unexpected errors.
 
-Example:
-    >>> # Example usage of _release_pooled_connection
-    >>> pass"""
+        Example:
+            >>> # Example usage of _release_pooled_connection
+            >>> pass"""
         key = (ip, port)
         now = time.monotonic()
         self._conn_pool[key] = (reader, writer, now)

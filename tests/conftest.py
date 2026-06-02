@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import asdict
 from typing import List
 
 import pytest
@@ -160,6 +159,7 @@ async def tcp_banner_server():
     Note:
         The server is closed after the fixture yields.
     """
+
     async def handler(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """Handle a single TCP connection with a banner response.
 
@@ -210,6 +210,7 @@ async def http_test_server():
     Note:
         The server is closed after the fixture yields.
     """
+
     async def handler(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """Handle a single HTTP request.
 
@@ -268,6 +269,7 @@ async def ftp_banner_server():
     Note:
         The server is closed after the fixture yields.
     """
+
     async def handler(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         """Handle a single TCP connection with an FTP banner.
 

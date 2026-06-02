@@ -1,6 +1,4 @@
 import asyncio
-import os
-import struct
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -27,9 +25,22 @@ def rate_limiter():
 @pytest.fixture
 def sample_devices():
     return [
-        Device(ip="192.168.1.1", mac="00:11:22:33:44:55", hostname="gateway", open_ports=[80, 443, 22], services=[Service(80, "tcp", "http", "nginx"), Service(443, "tcp", "https")]),
-        Device(ip="192.168.1.100", mac="aa:bb:cc:dd:ee:ff", open_ports=[445, 3389], services=[Service(445, "tcp", "smb")]),
-        Device(ip="192.168.1.101", mac="08:00:27:11:22:33", open_ports=[1900, 5353], services=[Service(1900, "udp", "upnp")]),
+        Device(
+            ip="192.168.1.1",
+            mac="00:11:22:33:44:55",
+            hostname="gateway",
+            open_ports=[80, 443, 22],
+            services=[Service(80, "tcp", "http", "nginx"), Service(443, "tcp", "https")],
+        ),
+        Device(
+            ip="192.168.1.100", mac="aa:bb:cc:dd:ee:ff", open_ports=[445, 3389], services=[Service(445, "tcp", "smb")]
+        ),
+        Device(
+            ip="192.168.1.101",
+            mac="08:00:27:11:22:33",
+            open_ports=[1900, 5353],
+            services=[Service(1900, "udp", "upnp")],
+        ),
         Device(ip="10.0.0.1", mac=None, open_ports=[53, 161], services=[Service(161, "udp", "snmp")]),
     ]
 
@@ -194,7 +205,13 @@ class TestDiscoveryMethods:
 
 class TestFingerprinting:
     def test_passive_fingerprint_full(self, mapper):
-        meta = {"ttl": "64", "window": "5840", "user_agent": "curl (Linux)", "smb_negotiate": "SMB3_11", "dhcp_option_55": "1,3,6"}
+        meta = {
+            "ttl": "64",
+            "window": "5840",
+            "user_agent": "curl (Linux)",
+            "smb_negotiate": "SMB3_11",
+            "dhcp_option_55": "1,3,6",
+        }
         fp = asyncio.run(mapper.passive_fingerprint(meta))
         assert fp.ttl == 64 and fp.ua_family == "linux" and fp.smb_dialect == "smb3"
 
@@ -280,7 +297,9 @@ class TestGeolocation:
     @patch("aiohttp.ClientSession.get")
     def test_geolocate_success(self, mock_get, mapper):
         mock_resp = AsyncMock(status=200)
-        mock_resp.json = AsyncMock(return_value={"status": "success", "country": "US", "regionName": "CA", "city": "MV", "isp": "G"})
+        mock_resp.json = AsyncMock(
+            return_value={"status": "success", "country": "US", "regionName": "CA", "city": "MV", "isp": "G"}
+        )
         mock_resp.__aenter__.return_value = mock_resp
         mock_get.return_value = mock_resp
         r = asyncio.run(mapper._geolocate_ip("8.8.8.8"))
@@ -305,8 +324,8 @@ class TestSNMP:
             async for item in mapper._iterate_snmp(iter([("a", "b")])):
                 gathered.append(item)
             return gathered
-        assert asyncio.run(run()) == [("a", "b")]
 
+        assert asyncio.run(run()) == [("a", "b")]
 
 
 import pytest
@@ -314,30 +333,31 @@ import asyncio
 from specter.models.dataclasses import Device
 from unittest.mock import AsyncMock, patch, MagicMock
 
+
 @pytest.mark.asyncio
 async def test_mapper_discovery_fallbacks(mapper):
     # Simulate partial failures to trigger fallbacks
-    mapper.arp_scan = AsyncMock(return_value=[Device('192.168.1.2')])
+    mapper.arp_scan = AsyncMock(return_value=[Device("192.168.1.2")])
     mapper.icmp_ping_sweep = AsyncMock(return_value=[])
     mapper.tcp_ping_sweep = AsyncMock(return_value=[])
-    mapper.udp_discovery = AsyncMock(return_value=[Device('192.168.1.3')])
-    
+    mapper.udp_discovery = AsyncMock(return_value=[Device("192.168.1.3")])
+
     mapper.active_fingerprint = AsyncMock(return_value=None)
     mapper.passive_fingerprint = AsyncMock(return_value=None)
     mapper.detect_honeypot = MagicMock(return_value="cowrie")
-    
+
     try:
-        res = await mapper.discover('192.168.1.0/24')
+        res = await mapper.discover("192.168.1.0/24")
     except Exception:
         pass
+
 
 @pytest.mark.asyncio
 async def test_mapper_traceroute_paths(mapper):
-    mapper.traceroute = AsyncMock(return_value=[{'hop': 1, 'ip': '192.168.1.1'}])
-    mapper.detect_vlan_segments = MagicMock(return_value={"192.168.1.0/24": ['192.168.1.2']})
+    mapper.traceroute = AsyncMock(return_value=[{"hop": 1, "ip": "192.168.1.1"}])
+    mapper.detect_vlan_segments = MagicMock(return_value={"192.168.1.0/24": ["192.168.1.2"]})
     mapper.detect_nat_boundaries = MagicMock(return_value=["private_to_public"])
     try:
-        res = await mapper.analyze_topology([Device('192.168.1.2')])
+        res = await mapper.analyze_topology([Device("192.168.1.2")])
     except Exception:
         pass
-

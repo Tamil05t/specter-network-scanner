@@ -214,11 +214,11 @@ async def test_tcp_syn_scan_with_fallback(monkeypatch):
     monkeypatch.setattr(asyncio, "open_connection", fake_open)
 
     # stub out banner grab and service detection
-    async def fake_grab(ip, port, proto='tcp'):
+    async def fake_grab(ip, port, proto="tcp"):
         return "FAKEBANNER"
 
     async def fake_detect(ip, port, banner):
-        return Service(port=port, protocol='tcp', service_name='fake', version='1.0', banner=banner, cpe_guess=None)
+        return Service(port=port, protocol="tcp", service_name="fake", version="1.0", banner=banner, cpe_guess=None)
 
     monkeypatch.setattr(scanner, "grab_banner", fake_grab)
     monkeypatch.setattr(scanner, "detect_service", fake_detect)
@@ -281,7 +281,7 @@ def test_decoy_scan_implementation(monkeypatch):
     _install_fake_scapy(monkeypatch)
     called = {"decoy": 0}
 
-    def spy_send_decoys(target, port, proto='tcp'):
+    def spy_send_decoys(target, port, proto="tcp"):
         called["decoy"] += 1
 
     # enable decoy scan
@@ -302,7 +302,7 @@ def test_packet_fragmentation(monkeypatch):
 
     # install fake scapy that returns fragments
     def fake_fragment(pkt, fragsize=8):
-        return [b'f1', b'f2']
+        return [b"f1", b"f2"]
 
     def fake_send(pkt, verbose=False):
         fragments_sent["count"] += 1
@@ -348,10 +348,10 @@ async def test_connection_pooling(monkeypatch):
 def test_build_probe_and_fingerprints_and_circuit():
     scanner = PortScanner()
     # probe payloads for known ports
-    assert scanner._build_probe(80).startswith(b'GET')
+    assert scanner._build_probe(80).startswith(b"GET")
     assert isinstance(scanner._build_fingerprints(), dict)
 
-    target = '10.0.0.1'
+    target = "10.0.0.1"
     # circuit initially closed
     assert scanner._is_circuit_open(target) is False
     # record failures to open the circuit
@@ -370,34 +370,41 @@ def test_prioritize_ports_randomness():
     # should return a list with same elements
     assert set(p1) == set(ports)
 
+
 from unittest.mock import AsyncMock, MagicMock
 from specter.models.dataclasses import Service, Device
+
 
 @pytest.mark.asyncio
 async def test_udp_scan_success(monkeypatch):
     scanner = PortScanner()
-    scanner._scan_udp_port = AsyncMock(return_value=Service(port=53, protocol='udp', service_name='dns', version='', banner='', cpe_guess=None))
-    res = await scanner.scan_udp_ports('127.0.0.1', [53], timeout=0.1)
+    scanner._scan_udp_port = AsyncMock(
+        return_value=Service(port=53, protocol="udp", service_name="dns", version="", banner="", cpe_guess=None)
+    )
+    res = await scanner.scan_udp_ports("127.0.0.1", [53], timeout=0.1)
     assert len(res) == 1
+
 
 @pytest.mark.asyncio
 async def test_udp_scan_failure(monkeypatch):
     scanner = PortScanner()
     scanner._scan_udp_port = AsyncMock(return_value=None)
-    res = await scanner.scan_udp_ports('127.0.0.1', [53], timeout=0.1)
+    res = await scanner.scan_udp_ports("127.0.0.1", [53], timeout=0.1)
     assert len(res) == 0
+
 
 @pytest.mark.asyncio
 async def test_backoff(monkeypatch):
     scanner = PortScanner()
     await scanner._backoff(1)
 
+
 @pytest.mark.asyncio
 async def test_scan_device(monkeypatch):
     scanner = PortScanner()
-    scanner.scan_tcp_ports = AsyncMock(return_value=[Service(80, 'tcp', 'http')])
-    scanner.scan_udp_ports = AsyncMock(return_value=[Service(53, 'udp', 'dns')])
-    dev = Device('127.0.0.1')
-    from specter.core.rate_limiter import RateLimiter
+    scanner.scan_tcp_ports = AsyncMock(return_value=[Service(80, "tcp", "http")])
+    scanner.scan_udp_ports = AsyncMock(return_value=[Service(53, "udp", "dns")])
+    dev = Device("127.0.0.1")
+
     res = await scanner.scan_device(dev, [80, 53], MagicMock())
     assert res is not None

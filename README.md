@@ -1,4 +1,4 @@
-# Specter Network Scanner 🕵️‍♂️
+# Specter Network Scanner 
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
@@ -6,14 +6,14 @@
 
 A high-performance, asynchronous network reconnaissance tool with service detection, exploit correlation, and interactive reporting.
 
-## 🚀 Features
-- ⚡ **Async Scanning**: High-speed discovery and scanning with built-in rate limiting.
-- 🧭 **Network Discovery & OS Fingerprinting**: Accurately identify devices and their operating systems on the network.
-- 🧩 **Exploit-DB Correlation**: Automatically cross-reference discovered services with known vulnerabilities.
-- 📊 **Interactive HTML Reporting**: Generate clean, easy-to-read reports for stakeholders.
-- 🧰 **Router Fingerprinting & Safety Controls**: Intelligent controls to prevent disrupting fragile network equipment.
+##  Features
+-  **Async Scanning**: High-speed discovery and scanning with built-in rate limiting.
+- **Network Discovery & OS Fingerprinting**: Accurately identify devices and their operating systems on the network.
+-  **Exploit-DB Correlation**: Automatically cross-reference discovered services with known vulnerabilities.
+-  **Interactive HTML Reporting**: Generate clean, easy-to-read reports for stakeholders.
+-  **Router Fingerprinting & Safety Controls**: Intelligent controls to prevent disrupting fragile network equipment.
 
-## 🛠️ Installation
+##  Installation
 
 You can install Specter Network Scanner using your preferred method.
 
@@ -32,7 +32,7 @@ docker build -t specter .
 docker run --rm --network host specter scan -t 127.0.0.1
 ```
 
-## 📖 Usage
+##  Usage
 
 ### Basic Commands
 
@@ -56,20 +56,20 @@ python main.py scan -t 192.168.1.10 -p 22,80,443,8080 --profile standard
 python main.py scan -t 192.168.1.0/24 --os-detect --exploit-lookup
 ```
 
-## 📸 Screenshots
+##  Screenshots
 
 *(Replace with actual screenshots of your tool)*
 ![Dashboard Screenshot Placeholder](https://via.placeholder.com/800x400?text=Dashboard+Screenshot)
 ![Terminal Output Placeholder](https://via.placeholder.com/800x400?text=Terminal+Output+Screenshot)
 
-## ⚙️ Configuration
+##  Configuration
 
 See `docs/configuration.md` for the full YAML reference.
 
-## ⚖️ Legal and Ethical Use
+##  Legal and Ethical Use
 
 Specter is intended for **authorized security testing only**. Do not scan systems you do not own or do not have explicit permission to test.
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! See `docs/contributing.md` for details.

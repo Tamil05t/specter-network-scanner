@@ -6,7 +6,6 @@ import asyncio
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Optional
 
-
 TaskCallable = Callable[[], Awaitable[None]]
 
 

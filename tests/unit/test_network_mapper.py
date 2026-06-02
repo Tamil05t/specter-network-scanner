@@ -180,20 +180,30 @@ async def test_geolocation_traceroute(monkeypatch):
             return False
 
         def get(self, url, timeout=5):
-            return FakeResp(status=200, payload={'status': 'success', 'country': 'Country', 'regionName': 'Region', 'city': 'City', 'isp': 'ISP'})
+            return FakeResp(
+                status=200,
+                payload={
+                    "status": "success",
+                    "country": "Country",
+                    "regionName": "Region",
+                    "city": "City",
+                    "isp": "ISP",
+                },
+            )
 
     mapper = NetworkMapper()
     # directly call geolocate helper with fake session by monkeypatching aiohttp.ClientSession
-    monkeypatch.setattr('aiohttp.ClientSession', FakeClientSession)
-    geo = await mapper._geolocate_ip('8.8.8.8')
-    assert geo is not None and 'country' in geo
+    monkeypatch.setattr("aiohttp.ClientSession", FakeClientSession)
+    geo = await mapper._geolocate_ip("8.8.8.8")
+    assert geo is not None and "country" in geo
 
 
 def test_mac_oui_lookup_all_formats():
     from specter.scanners.network_mapper import DeviceClassifier
-    classifier = DeviceClassifier({ '00:11:22': 'VendorA', 'AA:BB:CC': 'VendorB' })
-    assert classifier.classify_by_mac_oui('00-11-22-33-44-55') == 'VendorA'
-    assert classifier.classify_by_mac_oui('aa:bb:cc:dd:ee:ff') == 'VendorB'
+
+    classifier = DeviceClassifier({"00:11:22": "VendorA", "AA:BB:CC": "VendorB"})
+    assert classifier.classify_by_mac_oui("00-11-22-33-44-55") == "VendorA"
+    assert classifier.classify_by_mac_oui("aa:bb:cc:dd:ee:ff") == "VendorB"
 
 
 @pytest.mark.asyncio
@@ -205,7 +215,7 @@ async def test_active_fingerprint_tcp_options(monkeypatch):
     class FakeReply:
         ttl = 64
         window = 1024
-        options = [('MSS', 1460), ('TS', (0,0))]
+        options = [("MSS", 1460), ("TS", (0, 0))]
 
         def haslayer(self, proto):
             return True
@@ -214,19 +224,19 @@ async def test_active_fingerprint_tcp_options(monkeypatch):
             return self
 
         def sprintf(self, fmt):
-            return 'S'
+            return "S"
 
     def fake_sr1(pkt, timeout=None, verbose=False):
         return FakeReply()
 
-    scapy_all = types.ModuleType('scapy.all')
+    scapy_all = types.ModuleType("scapy.all")
     scapy_all.sr1 = fake_sr1
     scapy_all.IP = object
     scapy_all.TCP = object
     scapy_all.ICMP = object
-    monkeypatch.setitem(sys.modules, 'scapy', types.ModuleType('scapy'))
-    monkeypatch.setitem(sys.modules, 'scapy.all', scapy_all)
+    monkeypatch.setitem(sys.modules, "scapy", types.ModuleType("scapy"))
+    monkeypatch.setitem(sys.modules, "scapy.all", scapy_all)
 
     mapper = NetworkMapper()
-    fp = await mapper.active_fingerprint('127.0.0.1')
+    fp = await mapper.active_fingerprint("127.0.0.1")
     assert isinstance(fp.tcp_options, list)
