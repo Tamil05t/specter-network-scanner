@@ -93,10 +93,14 @@ def test_cli_env_profile_override(monkeypatch, tmp_path):
         """
         return None
 
+    async def fake_start_autosave(self):
+        return None
+
     monkeypatch.setattr(main.SpecterScanner, "run_scan", fake_run_scan)
     monkeypatch.setattr(main.SpecterScanner, "generate_reports", fake_generate_reports)
     monkeypatch.setattr(main.SpecterScanner, "initialize", fake_init)
     monkeypatch.setattr(main.SpecterScanner, "cleanup", fake_cleanup)
+    monkeypatch.setattr(main.SpecterScanner, "start_autosave", fake_start_autosave)
     env = {"SPECTER_PROFILE": "aggressive"}
     result = runner.invoke(
         main.cli, ["scan", "-t", "127.0.0.1", "-o", str(tmp_path)], env=env
