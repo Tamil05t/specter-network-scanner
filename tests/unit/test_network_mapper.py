@@ -209,7 +209,8 @@ def test_mac_oui_lookup_all_formats():
 @pytest.mark.asyncio
 async def test_active_fingerprint_tcp_options(monkeypatch):
     # Simulate scapy reply with TCP options
-    import types, sys
+    import types
+    import sys
     from specter.scanners.network_mapper import NetworkMapper
 
     class FakeReply:

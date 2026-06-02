@@ -1,13 +1,13 @@
 """Integration tests for CLI."""
 
 from __future__ import annotations
+from specter.reporting.html_report import generate_sample_data
+import main
 from click.testing import CliRunner
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-import main
-from specter.reporting.html_report import generate_sample_data
 
 
 def test_cli_version(tmp_path):

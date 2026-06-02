@@ -1,10 +1,14 @@
 """Unit tests for RouterExplorer."""
 
 from __future__ import annotations
+from specter.scanners.router_explorer import RouterExplorer
+import aiohttp
+from specter.models.dataclasses import Device
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from specter.scanners.router_explorer import RouterExplorer, VENDOR_FINGERPRINTS, DEFAULT_CREDS
+from specter.scanners.router_explorer import VENDOR_FINGERPRINTS, DEFAULT_CREDS
 
 
 def test_vendor_detection():
@@ -419,11 +423,6 @@ async def test_port_forwarding_discovery_endpoint():
     assert any("Port forwarding" in s for s in info)
 
 
-from unittest.mock import AsyncMock, MagicMock
-from specter.models.dataclasses import Device
-import aiohttp
-
-
 @pytest.mark.asyncio
 async def test_explore_mocked(monkeypatch):
     explorer = RouterExplorer()
@@ -460,10 +459,6 @@ async def test_upnp_discover(monkeypatch):
     explorer._ssdp_query = AsyncMock(return_value=[])
     res = await explorer.upnp_discover()
     assert isinstance(res, list)
-
-
-from specter.scanners.router_explorer import RouterExplorer
-from unittest.mock import AsyncMock, MagicMock
 
 
 @pytest.mark.asyncio

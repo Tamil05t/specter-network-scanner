@@ -1,9 +1,10 @@
 """Unit tests for ExploitCorrelator."""
 
 from __future__ import annotations
+from unittest.mock import AsyncMock
+from specter.models.dataclasses import Device, Vulnerability, Service
 import pytest
 from specter.correlation.engine import ExploitCorrelator
-from specter.models.dataclasses import Service, Vulnerability
 
 
 @pytest.mark.asyncio
@@ -121,12 +122,6 @@ def test_confidence_score(mock_exploit_db_csv, tmp_path):
     assert 0.0 <= score <= 1.0
 
 
-import pytest
-from specter.correlation.engine import ExploitCorrelator
-from specter.models.dataclasses import Device, Vulnerability, Service
-from unittest.mock import AsyncMock
-
-
 @pytest.mark.asyncio
 async def test_exploit_correlator_deep():
     c = ExploitCorrelator()
@@ -157,6 +152,6 @@ async def test_correlate_topology():
     dev2 = Device("10.0.0.2")
 
     try:
-        res = await c.correlate_topology([dev1, dev2])
+        await c.correlate_topology([dev1, dev2])
     except Exception:
         pass

@@ -1,5 +1,7 @@
+from unittest.mock import AsyncMock, patch, MagicMock
+from specter.models.dataclasses import Device
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+
 
 import pytest
 from specter.scanners.network_mapper import (
@@ -8,7 +10,7 @@ from specter.scanners.network_mapper import (
     NetworkMapper,
     OSGuess,
 )
-from specter.models.dataclasses import Device, Service
+from specter.models.dataclasses import Service
 from specter.core.rate_limiter import RateLimiter
 
 
@@ -328,12 +330,6 @@ class TestSNMP:
         assert asyncio.run(run()) == [("a", "b")]
 
 
-import pytest
-import asyncio
-from specter.models.dataclasses import Device
-from unittest.mock import AsyncMock, patch, MagicMock
-
-
 @pytest.mark.asyncio
 async def test_mapper_discovery_fallbacks(mapper):
     # Simulate partial failures to trigger fallbacks
@@ -347,7 +343,7 @@ async def test_mapper_discovery_fallbacks(mapper):
     mapper.detect_honeypot = MagicMock(return_value="cowrie")
 
     try:
-        res = await mapper.discover("192.168.1.0/24")
+        await mapper.discover("192.168.1.0/24")
     except Exception:
         pass
 
@@ -358,6 +354,6 @@ async def test_mapper_traceroute_paths(mapper):
     mapper.detect_vlan_segments = MagicMock(return_value={"192.168.1.0/24": ["192.168.1.2"]})
     mapper.detect_nat_boundaries = MagicMock(return_value=["private_to_public"])
     try:
-        res = await mapper.analyze_topology([Device("192.168.1.2")])
+        await mapper.analyze_topology([Device("192.168.1.2")])
     except Exception:
         pass

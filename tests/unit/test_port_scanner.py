@@ -1,6 +1,8 @@
 """Unit tests for PortScanner."""
 
 from __future__ import annotations
+from specter.models.dataclasses import Service, Device
+from unittest.mock import AsyncMock, MagicMock
 
 import asyncio
 import sys
@@ -9,7 +11,6 @@ import types
 import pytest
 
 from specter.scanners.port_scanner import PortScanner
-from specter.models.dataclasses import Service
 
 
 @pytest.mark.asyncio
@@ -320,7 +321,7 @@ def test_packet_fragmentation(monkeypatch):
     scanner._fragment_size = 4
 
     # run probe; should not raise
-    res = scanner._syn_probe("127.0.0.1", 22)
+    scanner._syn_probe("127.0.0.1", 22)
     assert fragments_sent["count"] >= 0
 
 
@@ -369,10 +370,6 @@ def test_prioritize_ports_randomness():
     p1 = scanner._prioritize_ports(list(ports))
     # should return a list with same elements
     assert set(p1) == set(ports)
-
-
-from unittest.mock import AsyncMock, MagicMock
-from specter.models.dataclasses import Service, Device
 
 
 @pytest.mark.asyncio
