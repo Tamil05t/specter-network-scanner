@@ -4,6 +4,7 @@ import os
 import json
 from pathlib import Path
 from apscheduler.schedulers.blocking import BlockingScheduler
+from typing import Optional
 from rich.console import Console
 
 console = Console()
@@ -23,7 +24,7 @@ def run_scheduled_scan(target: str, **kwargs):
 
 
 def add_schedule(
-    schedule_type: str, time_str: str, target: str, day: str = None, date: str = None
+    schedule_type: str, time_str: str, target: str, day: Optional[str] = None, date: Optional[str] = None
 ):
     """Save configuration and block to run scheduler."""
     # Ensure dir exists

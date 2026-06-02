@@ -14,7 +14,7 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, AsyncGenerator
 import aiofiles
 import aiohttp
 from specter.core.rate_limiter import RateLimiter
@@ -876,7 +876,7 @@ class NetworkMapper:
         except Exception:
             self._logger.warning("networkx not available")
             return
-        graph = nx.Graph()
+        graph = nx.Graph()  # type: ignore[var-annotated]
         for device in devices:
             graph.add_node(device.ip, mac=device.mac or "", os=device.os_guess or "")
         if devices:
@@ -1530,7 +1530,7 @@ class NetworkMapper:
                 continue
         return edges
 
-    async def _iterate_snmp(self, iterator) -> Iterable:
+    async def _iterate_snmp(self, iterator) -> "AsyncGenerator":
         """Yield items from a synchronous SNMP iterator.
 
         Args:

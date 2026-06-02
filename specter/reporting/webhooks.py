@@ -3,11 +3,12 @@
 import requests
 import asyncio
 from rich.console import Console
+from typing import Optional
 
 console = Console()
 
 
-async def send_webhook_alert(url: str, event_type: str, scan_result: dict = None):
+async def send_webhook_alert(url: str, event_type: str, scan_result: Optional[dict] = None):
     """Send an async webhook notification."""
     if not url:
         return

@@ -25,7 +25,7 @@ class DashboardRenderer:
             "low": 0,
             "info": 0,
         }
-        self.latest_findings = []
+        self.latest_findings: list = []
 
     def generate_layout(self) -> Layout:
         """Create the overall dashboard layout."""

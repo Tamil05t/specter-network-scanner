@@ -77,7 +77,7 @@ def sample_devices() -> List[Device]:
                         description="Test vuln",
                         severity="high",
                         affected_service="http",
-                        exploit_db_id=12345,
+                        exploit_db_id="12345",
                     )
                 ],
             )

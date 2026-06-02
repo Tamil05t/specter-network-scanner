@@ -26,7 +26,7 @@ from specter.models.dataclasses import ScanResult, Service, Vulnerability
 try:
     from rapidfuzz.distance import Levenshtein as _Levenshtein
 except Exception:
-    _Levenshtein = None
+    _Levenshtein = None  # type: ignore
 EXPLOIT_DB_URL = (
     "https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv"
 )
@@ -520,7 +520,7 @@ class ExploitCorrelator:
             >>> pass"""
         storage = RamStorage()
         self._index = storage.create_index(self._schema)
-        writer = self._index.writer()
+        writer = self._index.writer()  # type: ignore
         for record in self._records.values():
             writer.add_document(
                 exploit_db_id=str(record.exploit_db_id),
@@ -1131,7 +1131,7 @@ class ExploitCorrelator:
                 ExploitMatch(
                     exploit_db_id=exploit_id,
                     title=entry.get("Title", "searchsploit result"),
-                    cve_list=self._extract_cves(json.dumps(entry)),
+                    cve_list=self._extract_cves([json.dumps(entry)]),
                     platform=entry.get("Platform", "unknown"),
                     exploit_type=entry.get("Type", "unknown"),
                     verified=False,

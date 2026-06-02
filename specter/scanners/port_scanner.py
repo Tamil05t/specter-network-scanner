@@ -294,18 +294,18 @@ class PortScanner:
             reader, writer = await self._get_pooled_connection(ip, port)
             if reader is None or writer is None:
                 return ""
-            banner = ""
+            banner_bytes = b""
             try:
                 probe = self._build_probe(port)
                 if probe:
                     writer.write(probe)
                     await writer.drain()
-                banner = await asyncio.wait_for(reader.read(512), timeout=self._timeout)
+                banner_bytes = await asyncio.wait_for(reader.read(512), timeout=self._timeout)
             except Exception:
-                banner = b""
+                banner_bytes = b""
             finally:
                 await self._release_pooled_connection(ip, port, reader, writer)
-        return banner.decode(errors="ignore").strip()
+        return banner_bytes.decode(errors="ignore").strip()
 
     async def detect_service(self, ip: str, port: int, banner: str) -> Service:
         """Identify service and version from banner using regex patterns.
