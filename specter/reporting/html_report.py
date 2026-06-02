@@ -14,7 +14,13 @@ try:
     from pyvis.network import Network
 except Exception:
     Network = None
-SEVERITY_COLORS = {"critical": "#FF0000", "high": "#FF4500", "medium": "#FFA500", "low": "#FFD700", "info": "#00BFFF"}
+SEVERITY_COLORS = {
+    "critical": "#FF0000",
+    "high": "#FF4500",
+    "medium": "#FFA500",
+    "low": "#FFD700",
+    "info": "#00BFFF",
+}
 
 
 def risk_score(device: Device, exposed_admin: int = 0) -> float:
@@ -48,7 +54,9 @@ def risk_score(device: Device, exposed_admin: int = 0) -> float:
     return round(score, 2)
 
 
-def generate_html_report(result: ScanResult, output_path: str, previous_result: Optional[ScanResult] = None) -> None:
+def generate_html_report(
+    result: ScanResult, output_path: str, previous_result: Optional[ScanResult] = None
+) -> None:
     """Generate a single-file HTML report with embedded CSS/JS.
 
     Args:
@@ -186,7 +194,12 @@ async def export_siem_json(result: ScanResult, output_path: str) -> None:
     for device in result.devices:
         payload.append(
             {
-                "asset": {"ip": device.ip, "mac": device.mac, "hostname": device.hostname, "os": device.os_guess},
+                "asset": {
+                    "ip": device.ip,
+                    "mac": device.mac,
+                    "hostname": device.hostname,
+                    "os": device.os_guess,
+                },
                 "exposure": {
                     "open_ports": device.open_ports,
                     "services": [svc.service_name for svc in device.services],
@@ -232,16 +245,22 @@ def generate_sample_data() -> ScanResult:
                 os_guess="linux" if i % 2 == 0 else "windows",
                 open_ports=[22, 80, 443] if i % 2 == 0 else [445, 3389],
                 services=[
-                    Service(port=80, protocol="tcp", service_name="http", version="1.0"),
+                    Service(
+                        port=80, protocol="tcp", service_name="http", version="1.0"
+                    ),
                     Service(port=22, protocol="tcp", service_name="ssh", version="7.9"),
                 ],
                 vulnerabilities=[],
             )
         )
-    return ScanResult(devices=devices, scan_duration=12.5, packets_sent=1200, correlation_matches=5)
+    return ScanResult(
+        devices=devices, scan_duration=12.5, packets_sent=1200, correlation_matches=5
+    )
 
 
-def _build_report_data(result: ScanResult, previous_result: Optional[ScanResult]) -> Dict[str, Any]:
+def _build_report_data(
+    result: ScanResult, previous_result: Optional[ScanResult]
+) -> Dict[str, Any]:
     """Build report data used by the HTML template.
 
     Args:
@@ -320,7 +339,13 @@ def _build_topology(devices: List[Device]) -> str:
         color = _device_color(dtype)
         size = max(10, 10 + len(device.open_ports) * 2)
         tooltip = f"IP: {device.ip}<br>OS: {device.os_guess or 'unknown'}<br>Ports: {len(device.open_ports)}"
-        net.add_node(device.ip, label=device.hostname or device.ip, color=color, size=size, title=tooltip)
+        net.add_node(
+            device.ip,
+            label=device.hostname or device.ip,
+            color=color,
+            size=size,
+            title=tooltip,
+        )
     if devices:
         root = devices[0].ip
         for device in devices[1:]:
@@ -461,7 +486,9 @@ def _build_chart_data(devices: List[Device]) -> Dict[str, Any]:
         for port in device.open_ports:
             port_counts[port] = port_counts.get(port, 0) + 1
         for svc in device.services:
-            service_counts[svc.service_name] = service_counts.get(svc.service_name, 0) + 1
+            service_counts[svc.service_name] = (
+                service_counts.get(svc.service_name, 0) + 1
+            )
         os_name = device.os_guess or "unknown"
         os_counts[os_name] = os_counts.get(os_name, 0) + 1
         subnet = ".".join(device.ip.split(".")[:3]) + ".0/24"
@@ -498,7 +525,13 @@ def _build_chart_data(devices: List[Device]) -> Dict[str, Any]:
         "cvss_values": cvss_values,
         "treemap_labels": service_labels,
         "treemap_values": service_values,
-        "waterfall_labels": ["Discovery", "Port Scan", "Fingerprint", "Router", "Report"],
+        "waterfall_labels": [
+            "Discovery",
+            "Port Scan",
+            "Fingerprint",
+            "Router",
+            "Report",
+        ],
         "waterfall_values": [20, 35, 25, 10, 10],
     }
 
@@ -522,7 +555,10 @@ def _top_vulnerable_devices(devices: List[Device]) -> List[Dict[str, Any]]:
             Top 10 devices are selected by risk score.
     """
     ranked = sorted(devices, key=lambda d: risk_score(d), reverse=True)[:10]
-    return [{"ip": d.ip, "hostname": d.hostname or "", "risk": risk_score(d)} for d in ranked]
+    return [
+        {"ip": d.ip, "hostname": d.hostname or "", "risk": risk_score(d)}
+        for d in ranked
+    ]
 
 
 def _build_timeline(devices: List[Device]) -> List[Dict[str, Any]]:
@@ -682,7 +718,10 @@ def _build_diff(previous: ScanResult, current: ScanResult) -> Dict[str, Any]:
     """
     prev_ips = {d.ip for d in previous.devices}
     curr_ips = {d.ip for d in current.devices}
-    return {"new_hosts": sorted(curr_ips - prev_ips), "removed_hosts": sorted(prev_ips - curr_ips)}
+    return {
+        "new_hosts": sorted(curr_ips - prev_ips),
+        "removed_hosts": sorted(prev_ips - curr_ips),
+    }
 
 
 def _template_html() -> str:

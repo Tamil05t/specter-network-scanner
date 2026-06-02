@@ -18,15 +18,27 @@ class DashboardRenderer:
         self.ports_scanned = 0
         self.start_time = datetime.now()
 
-        self.severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        self.severity_counts = {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+            "info": 0,
+        }
         self.latest_findings = []
 
     def generate_layout(self) -> Layout:
         """Create the overall dashboard layout."""
         layout = Layout()
-        layout.split_column(Layout(name="header", size=3), Layout(name="main", ratio=1), Layout(name="footer", size=3))
+        layout.split_column(
+            Layout(name="header", size=3),
+            Layout(name="main", ratio=1),
+            Layout(name="footer", size=3),
+        )
 
-        layout["main"].split_row(Layout(name="stats", ratio=1), Layout(name="findings", ratio=2))
+        layout["main"].split_row(
+            Layout(name="stats", ratio=1), Layout(name="findings", ratio=2)
+        )
 
         self._update_panels(layout)
         return layout
@@ -82,15 +94,27 @@ class DashboardRenderer:
         stats_table.add_row("[blue]Low", str(self.severity_counts["low"]))
 
         layout["stats"].update(
-            Panel(Align.center(stats_table, vertical="middle"), title="Scan Progress", border_style="cyan")
+            Panel(
+                Align.center(stats_table, vertical="middle"),
+                title="Scan Progress",
+                border_style="cyan",
+            )
         )
 
         # Findings Log
         findings_text = (
-            "\\n".join(self.latest_findings) if self.latest_findings else "[dim]Waiting for findings...[/dim]"
+            "\\n".join(self.latest_findings)
+            if self.latest_findings
+            else "[dim]Waiting for findings...[/dim]"
         )
-        layout["findings"].update(Panel(findings_text, title="Latest Vulnerabilities", border_style="red"))
+        layout["findings"].update(
+            Panel(findings_text, title="Latest Vulnerabilities", border_style="red")
+        )
 
         # Footer
-        footer_text = Text("Press Ctrl+C to abort scan safely and save state.", justify="center", style="dim white")
+        footer_text = Text(
+            "Press Ctrl+C to abort scan safely and save state.",
+            justify="center",
+            style="dim white",
+        )
         layout["footer"].update(Panel(footer_text, style="dim"))

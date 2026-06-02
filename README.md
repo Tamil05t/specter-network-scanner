@@ -58,9 +58,17 @@ python main.py scan -t 192.168.1.0/24 --os-detect --exploit-lookup
 
 ##  Screenshots
 
-*(Replace with actual screenshots of your tool)*
-![Dashboard Screenshot Placeholder](https://via.placeholder.com/800x400?text=Dashboard+Screenshot)
-![Terminal Output Placeholder](https://via.placeholder.com/800x400?text=Terminal+Output+Screenshot)
+![Help Menu](Screenshots/help-menu.png)
+*Main CLI help menu showing available commands*
+
+![Scan Help](Screenshots/scan-help.png)
+*Detailed help for the scan command and its options*
+
+![Live Dashboard](Screenshots/live-dashboard.png)
+*Real-time scanning progress dashboard*
+
+![HTML Report](Screenshots/html-report.png)
+*Generated interactive HTML report*
 
 ##  Configuration
 

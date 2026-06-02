@@ -27,7 +27,9 @@ try:
     from rapidfuzz.distance import Levenshtein as _Levenshtein
 except Exception:
     _Levenshtein = None
-EXPLOIT_DB_URL = "https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv"
+EXPLOIT_DB_URL = (
+    "https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv"
+)
 NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 
 
@@ -172,10 +174,17 @@ class ExploitCorrelator:
                 if name_lower and name_lower in (record.title or "").lower():
                     matches.append(self._build_match(record, 0.9, "substring_title"))
                 elif name_lower and name_lower in (record.description or "").lower():
-                    matches.append(self._build_match(record, 0.8, "substring_description"))
+                    matches.append(
+                        self._build_match(record, 0.8, "substring_description")
+                    )
         matches = self._filter_and_rank(matches)
         self._set_cached(cache_key, matches)
-        self._logger.info("service correlation %s:%s -> %d matches", service.service_name, service.port, len(matches))
+        self._logger.info(
+            "service correlation %s:%s -> %d matches",
+            service.service_name,
+            service.port,
+            len(matches),
+        )
         return matches
 
     async def correlate_vulnerability(self, vuln: Vulnerability) -> List[ExploitMatch]:
@@ -208,7 +217,9 @@ class ExploitCorrelator:
             matches.extend(await self._searchsploit_lookup_by_text(vuln.description))
         matches = self._filter_and_rank(matches)
         self._set_cached(cache_key, matches)
-        self._logger.info("vuln correlation %s -> %d matches", vuln.cve_id, len(matches))
+        self._logger.info(
+            "vuln correlation %s -> %d matches", vuln.cve_id, len(matches)
+        )
         return matches
 
     async def batch_correlate(self, scan_results: ScanResult) -> CorrelatedResult:
@@ -293,7 +304,9 @@ class ExploitCorrelator:
         params = {"cveId": cve_id}
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(NVD_API_URL, params=params, headers=headers, timeout=10) as response:
+                async with session.get(
+                    NVD_API_URL, params=params, headers=headers, timeout=10
+                ) as response:
                     if response.status != 200:
                         return None
                     payload = await response.json()
@@ -455,7 +468,9 @@ class ExploitCorrelator:
             >>> pass"""
         self._records.clear()
         self._cve_map.clear()
-        async with aiofiles.open(csv_path, "r", encoding="utf-8", errors="ignore") as handle:
+        async with aiofiles.open(
+            csv_path, "r", encoding="utf-8", errors="ignore"
+        ) as handle:
             header = await handle.readline()
             if not header:
                 return
@@ -564,7 +579,10 @@ class ExploitCorrelator:
         return self._match_keyword(terms, 1.0, "exact_cpe")
 
     def _match_keyword(
-        self, terms: Iterable[str], base_confidence: float = 0.6, reason: str = "keyword_match"
+        self,
+        terms: Iterable[str],
+        base_confidence: float = 0.6,
+        reason: str = "keyword_match",
     ) -> List[ExploitMatch]:
         """Match exploits using keyword search.
 
@@ -706,7 +724,9 @@ class ExploitCorrelator:
         Example:
             >>> # Example usage of _filter_and_rank
             >>> pass"""
-        filtered = [m for m in matches if m.exploit_type.lower() not in self._exclude_types]
+        filtered = [
+            m for m in matches if m.exploit_type.lower() not in self._exclude_types
+        ]
         unique: Dict[int, ExploitMatch] = {}
         for match in filtered:
             existing = unique.get(match.exploit_db_id)
@@ -714,7 +734,9 @@ class ExploitCorrelator:
                 unique[match.exploit_db_id] = match
         return sorted(unique.values(), key=lambda m: m.confidence, reverse=True)
 
-    def _build_match(self, record: ExploitRecord, confidence: float, reason: str) -> ExploitMatch:
+    def _build_match(
+        self, record: ExploitRecord, confidence: float, reason: str
+    ) -> ExploitMatch:
         """Build an ExploitMatch from a record.
 
         Args:
@@ -947,7 +969,9 @@ class ExploitCorrelator:
             >>> pass"""
         async with self._nvd_lock:
             now = time.time()
-            self._nvd_calls = [t for t in self._nvd_calls if now - t < self._nvd_rate_window]
+            self._nvd_calls = [
+                t for t in self._nvd_calls if now - t < self._nvd_rate_window
+            ]
             if len(self._nvd_calls) >= self._nvd_rate_limit:
                 sleep_for = self._nvd_rate_window - (now - self._nvd_calls[0])
                 await asyncio.sleep(max(0.0, sleep_for))
@@ -1017,7 +1041,9 @@ class ExploitCorrelator:
             query = f"{query} {service.version}"
         return await self._searchsploit_query(query)
 
-    async def _searchsploit_lookup_by_text(self, text: Optional[str]) -> List[ExploitMatch]:
+    async def _searchsploit_lookup_by_text(
+        self, text: Optional[str]
+    ) -> List[ExploitMatch]:
         """Lookup exploits with searchsploit using raw text.
 
         Args:
@@ -1082,7 +1108,12 @@ class ExploitCorrelator:
             Example:
                 TODO
             """
-            completed = subprocess.run(["searchsploit", "--json", query], capture_output=True, text=True, check=False)
+            completed = subprocess.run(
+                ["searchsploit", "--json", query],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
             return completed.stdout
 
         try:

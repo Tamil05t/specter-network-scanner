@@ -219,7 +219,14 @@ async def test_tcp_syn_scan_with_fallback(monkeypatch):
         return "FAKEBANNER"
 
     async def fake_detect(ip, port, banner):
-        return Service(port=port, protocol="tcp", service_name="fake", version="1.0", banner=banner, cpe_guess=None)
+        return Service(
+            port=port,
+            protocol="tcp",
+            service_name="fake",
+            version="1.0",
+            banner=banner,
+            cpe_guess=None,
+        )
 
     monkeypatch.setattr(scanner, "grab_banner", fake_grab)
     monkeypatch.setattr(scanner, "detect_service", fake_detect)
@@ -376,7 +383,14 @@ def test_prioritize_ports_randomness():
 async def test_udp_scan_success(monkeypatch):
     scanner = PortScanner()
     scanner._scan_udp_port = AsyncMock(
-        return_value=Service(port=53, protocol="udp", service_name="dns", version="", banner="", cpe_guess=None)
+        return_value=Service(
+            port=53,
+            protocol="udp",
+            service_name="dns",
+            version="",
+            banner="",
+            cpe_guess=None,
+        )
     )
     res = await scanner.scan_udp_ports("127.0.0.1", [53], timeout=0.1)
     assert len(res) == 1

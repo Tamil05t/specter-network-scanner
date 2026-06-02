@@ -96,7 +96,12 @@ async def test_scan_udp_ports_with_scapy(monkeypatch):
 
     async def fake_scan_udp_port(target, port, timeout):
         return Service(
-            port=port, protocol="udp", service_name="open|filtered", version=None, banner=None, cpe_guess=None
+            port=port,
+            protocol="udp",
+            service_name="open|filtered",
+            version=None,
+            banner=None,
+            cpe_guess=None,
         )
 
     monkeypatch.setattr(scanner, "_scan_udp_port", fake_scan_udp_port)
@@ -125,7 +130,11 @@ async def test_release_pooled_connection_closes_when_expired(monkeypatch):
     writer = FakeWriter()
     key = ("127.0.0.1", 8080)
     # insert entry with old timestamp to simulate expired
-    scanner._conn_pool[key] = (reader, writer, time.monotonic() - (scanner._conn_pool_ttl + 5))
+    scanner._conn_pool[key] = (
+        reader,
+        writer,
+        time.monotonic() - (scanner._conn_pool_ttl + 5),
+    )
     # now call release which will set and then close due to TTL logic
     await scanner._release_pooled_connection("127.0.0.1", 8080, reader, writer)
     # writer should be closed (or at least present)

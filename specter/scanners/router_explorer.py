@@ -19,12 +19,48 @@ from specter.models.dataclasses import Device, Vulnerability
 
 EventCallback = Callable[[Dict[str, str]], Awaitable[None]]
 DEFAULT_CREDS: Dict[str, List[Tuple[str, str]]] = {
-    "tp-link": [("admin", "admin"), ("admin", ""), ("admin", "password"), ("root", "admin"), ("user", "user")],
-    "d-link": [("admin", "admin"), ("admin", ""), ("admin", "password"), ("root", ""), ("user", "")],
-    "netgear": [("admin", "password"), ("admin", "admin"), ("admin", ""), ("root", "password"), ("user", "password")],
-    "linksys": [("admin", "admin"), ("admin", ""), ("root", "admin"), ("user", "admin"), ("admin", "password")],
-    "asus": [("admin", "admin"), ("admin", ""), ("root", "admin"), ("admin", "password"), ("user", "admin")],
-    "tenda": [("admin", "admin"), ("admin", ""), ("root", "admin"), ("user", "admin"), ("admin", "password")],
+    "tp-link": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("admin", "password"),
+        ("root", "admin"),
+        ("user", "user"),
+    ],
+    "d-link": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("admin", "password"),
+        ("root", ""),
+        ("user", ""),
+    ],
+    "netgear": [
+        ("admin", "password"),
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "password"),
+        ("user", "password"),
+    ],
+    "linksys": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "admin"),
+        ("user", "admin"),
+        ("admin", "password"),
+    ],
+    "asus": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "admin"),
+        ("admin", "password"),
+        ("user", "admin"),
+    ],
+    "tenda": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "admin"),
+        ("user", "admin"),
+        ("admin", "password"),
+    ],
     "huawei": [
         ("admin", "admin"),
         ("root", "admin"),
@@ -32,38 +68,212 @@ DEFAULT_CREDS: Dict[str, List[Tuple[str, str]]] = {
         ("admin", ""),
         ("user", "user"),
     ],
-    "zte": [("admin", "admin"), ("root", "admin"), ("telecomadmin", "admintelecom"), ("admin", ""), ("user", "user")],
-    "cisco": [("cisco", "cisco"), ("admin", "cisco"), ("admin", "admin"), ("root", "cisco"), ("user", "cisco")],
-    "juniper": [("root", ""), ("admin", "admin"), ("root", "admin"), ("juniper", "juniper"), ("user", "user")],
-    "mikrotik": [("admin", ""), ("admin", "admin"), ("root", ""), ("user", ""), ("admin", "password")],
-    "ubiquiti": [("ubnt", "ubnt"), ("admin", "admin"), ("root", "ubnt"), ("admin", ""), ("user", "ubnt")],
-    "fortinet": [("admin", ""), ("admin", "admin"), ("root", ""), ("user", ""), ("admin", "password")],
-    "paloalto": [("admin", "admin"), ("admin", ""), ("root", "admin"), ("user", "admin"), ("admin", "password")],
-    "arris": [("admin", "password"), ("admin", "admin"), ("admin", ""), ("root", "password"), ("user", "password")],
-    "technicolor": [("admin", "admin"), ("admin", ""), ("user", "user"), ("root", "admin"), ("admin", "password")],
-    "sagemcom": [("admin", "admin"), ("admin", ""), ("user", "user"), ("root", "admin"), ("admin", "password")],
-    "belkin": [("admin", ""), ("admin", "admin"), ("root", ""), ("user", ""), ("admin", "password")],
-    "tplink_isp": [("admin", "admin"), ("support", "support"), ("admin", ""), ("user", "user"), ("root", "admin")],
-    "zyxel": [("admin", "1234"), ("admin", "admin"), ("user", "user"), ("root", "1234"), ("admin", "password")],
-    "draytek": [("admin", "admin"), ("admin", ""), ("root", "admin"), ("user", "user"), ("admin", "password")],
-    "openwrt": [("root", ""), ("admin", "admin"), ("root", "admin"), ("user", "user"), ("admin", "password")],
-    "dd-wrt": [("root", "admin"), ("admin", "admin"), ("root", ""), ("user", "admin"), ("admin", "password")],
-    "edgeos": [("ubnt", "ubnt"), ("admin", "admin"), ("root", "ubnt"), ("admin", ""), ("user", "ubnt")],
-    "synology": [("admin", "admin"), ("admin", ""), ("root", "admin"), ("user", "admin"), ("admin", "password")],
-    "qnap": [("admin", "admin"), ("admin", ""), ("root", "admin"), ("user", "admin"), ("admin", "password")],
+    "zte": [
+        ("admin", "admin"),
+        ("root", "admin"),
+        ("telecomadmin", "admintelecom"),
+        ("admin", ""),
+        ("user", "user"),
+    ],
+    "cisco": [
+        ("cisco", "cisco"),
+        ("admin", "cisco"),
+        ("admin", "admin"),
+        ("root", "cisco"),
+        ("user", "cisco"),
+    ],
+    "juniper": [
+        ("root", ""),
+        ("admin", "admin"),
+        ("root", "admin"),
+        ("juniper", "juniper"),
+        ("user", "user"),
+    ],
+    "mikrotik": [
+        ("admin", ""),
+        ("admin", "admin"),
+        ("root", ""),
+        ("user", ""),
+        ("admin", "password"),
+    ],
+    "ubiquiti": [
+        ("ubnt", "ubnt"),
+        ("admin", "admin"),
+        ("root", "ubnt"),
+        ("admin", ""),
+        ("user", "ubnt"),
+    ],
+    "fortinet": [
+        ("admin", ""),
+        ("admin", "admin"),
+        ("root", ""),
+        ("user", ""),
+        ("admin", "password"),
+    ],
+    "paloalto": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "admin"),
+        ("user", "admin"),
+        ("admin", "password"),
+    ],
+    "arris": [
+        ("admin", "password"),
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "password"),
+        ("user", "password"),
+    ],
+    "technicolor": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("user", "user"),
+        ("root", "admin"),
+        ("admin", "password"),
+    ],
+    "sagemcom": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("user", "user"),
+        ("root", "admin"),
+        ("admin", "password"),
+    ],
+    "belkin": [
+        ("admin", ""),
+        ("admin", "admin"),
+        ("root", ""),
+        ("user", ""),
+        ("admin", "password"),
+    ],
+    "tplink_isp": [
+        ("admin", "admin"),
+        ("support", "support"),
+        ("admin", ""),
+        ("user", "user"),
+        ("root", "admin"),
+    ],
+    "zyxel": [
+        ("admin", "1234"),
+        ("admin", "admin"),
+        ("user", "user"),
+        ("root", "1234"),
+        ("admin", "password"),
+    ],
+    "draytek": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "admin"),
+        ("user", "user"),
+        ("admin", "password"),
+    ],
+    "openwrt": [
+        ("root", ""),
+        ("admin", "admin"),
+        ("root", "admin"),
+        ("user", "user"),
+        ("admin", "password"),
+    ],
+    "dd-wrt": [
+        ("root", "admin"),
+        ("admin", "admin"),
+        ("root", ""),
+        ("user", "admin"),
+        ("admin", "password"),
+    ],
+    "edgeos": [
+        ("ubnt", "ubnt"),
+        ("admin", "admin"),
+        ("root", "ubnt"),
+        ("admin", ""),
+        ("user", "ubnt"),
+    ],
+    "synology": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "admin"),
+        ("user", "admin"),
+        ("admin", "password"),
+    ],
+    "qnap": [
+        ("admin", "admin"),
+        ("admin", ""),
+        ("root", "admin"),
+        ("user", "admin"),
+        ("admin", "password"),
+    ],
 }
 VENDOR_FINGERPRINTS: List[Dict[str, Any]] = [
-    {"name": "tp-link", "server": ["tp-link"], "title": ["tp-link"], "upnp": ["tp-link"], "ssl": []},
-    {"name": "d-link", "server": ["d-link", "dlink"], "title": ["d-link"], "upnp": ["d-link"], "ssl": []},
-    {"name": "netgear", "server": ["netgear"], "title": ["netgear"], "upnp": ["netgear"], "ssl": []},
-    {"name": "linksys", "server": ["linksys"], "title": ["linksys"], "upnp": ["linksys"], "ssl": []},
-    {"name": "asus", "server": ["asus"], "title": ["asus"], "upnp": ["asus"], "ssl": []},
-    {"name": "tenda", "server": ["tenda"], "title": ["tenda"], "upnp": ["tenda"], "ssl": []},
-    {"name": "huawei", "server": ["huawei"], "title": ["huawei"], "upnp": ["huawei"], "ssl": []},
+    {
+        "name": "tp-link",
+        "server": ["tp-link"],
+        "title": ["tp-link"],
+        "upnp": ["tp-link"],
+        "ssl": [],
+    },
+    {
+        "name": "d-link",
+        "server": ["d-link", "dlink"],
+        "title": ["d-link"],
+        "upnp": ["d-link"],
+        "ssl": [],
+    },
+    {
+        "name": "netgear",
+        "server": ["netgear"],
+        "title": ["netgear"],
+        "upnp": ["netgear"],
+        "ssl": [],
+    },
+    {
+        "name": "linksys",
+        "server": ["linksys"],
+        "title": ["linksys"],
+        "upnp": ["linksys"],
+        "ssl": [],
+    },
+    {
+        "name": "asus",
+        "server": ["asus"],
+        "title": ["asus"],
+        "upnp": ["asus"],
+        "ssl": [],
+    },
+    {
+        "name": "tenda",
+        "server": ["tenda"],
+        "title": ["tenda"],
+        "upnp": ["tenda"],
+        "ssl": [],
+    },
+    {
+        "name": "huawei",
+        "server": ["huawei"],
+        "title": ["huawei"],
+        "upnp": ["huawei"],
+        "ssl": [],
+    },
     {"name": "zte", "server": ["zte"], "title": ["zte"], "upnp": ["zte"], "ssl": []},
-    {"name": "cisco", "server": ["cisco"], "title": ["cisco"], "upnp": ["cisco"], "ssl": ["cisco"]},
-    {"name": "juniper", "server": ["juniper"], "title": ["juniper"], "upnp": ["juniper"], "ssl": ["juniper"]},
-    {"name": "mikrotik", "server": ["mikrotik"], "title": ["mikrotik"], "upnp": ["mikrotik"], "ssl": []},
+    {
+        "name": "cisco",
+        "server": ["cisco"],
+        "title": ["cisco"],
+        "upnp": ["cisco"],
+        "ssl": ["cisco"],
+    },
+    {
+        "name": "juniper",
+        "server": ["juniper"],
+        "title": ["juniper"],
+        "upnp": ["juniper"],
+        "ssl": ["juniper"],
+    },
+    {
+        "name": "mikrotik",
+        "server": ["mikrotik"],
+        "title": ["mikrotik"],
+        "upnp": ["mikrotik"],
+        "ssl": [],
+    },
     {
         "name": "ubiquiti",
         "server": ["ubiquiti", "edgeos"],
@@ -71,47 +281,281 @@ VENDOR_FINGERPRINTS: List[Dict[str, Any]] = [
         "upnp": ["ubiquiti"],
         "ssl": [],
     },
-    {"name": "fortinet", "server": ["fortigate"], "title": ["fortinet"], "upnp": ["fortinet"], "ssl": ["fortinet"]},
-    {"name": "paloalto", "server": ["paloalto"], "title": ["palo alto"], "upnp": ["palo"], "ssl": ["palo alto"]},
-    {"name": "arris", "server": ["arris"], "title": ["arris"], "upnp": ["arris"], "ssl": []},
-    {"name": "technicolor", "server": ["technicolor"], "title": ["technicolor"], "upnp": ["technicolor"], "ssl": []},
-    {"name": "sagemcom", "server": ["sagemcom"], "title": ["sagemcom"], "upnp": ["sagemcom"], "ssl": []},
-    {"name": "belkin", "server": ["belkin"], "title": ["belkin"], "upnp": ["belkin"], "ssl": []},
-    {"name": "zyxel", "server": ["zyxel"], "title": ["zyxel"], "upnp": ["zyxel"], "ssl": []},
-    {"name": "draytek", "server": ["draytek"], "title": ["draytek"], "upnp": ["draytek"], "ssl": []},
-    {"name": "openwrt", "server": ["openwrt"], "title": ["openwrt"], "upnp": ["openwrt"], "ssl": []},
-    {"name": "dd-wrt", "server": ["dd-wrt"], "title": ["dd-wrt"], "upnp": ["dd-wrt"], "ssl": []},
-    {"name": "edgeos", "server": ["edgeos"], "title": ["edgeos"], "upnp": ["edgeos"], "ssl": []},
-    {"name": "synology", "server": ["synology"], "title": ["synology"], "upnp": ["synology"], "ssl": []},
-    {"name": "qnap", "server": ["qnap"], "title": ["qnap"], "upnp": ["qnap"], "ssl": []},
-    {"name": "arris-surfboard", "server": ["surfboard"], "title": ["surfboard"], "upnp": ["surfboard"], "ssl": []},
-    {"name": "hitron", "server": ["hitron"], "title": ["hitron"], "upnp": ["hitron"], "ssl": []},
-    {"name": "thomson", "server": ["thomson"], "title": ["thomson"], "upnp": ["thomson"], "ssl": []},
-    {"name": "billion", "server": ["billion"], "title": ["billion"], "upnp": ["billion"], "ssl": []},
+    {
+        "name": "fortinet",
+        "server": ["fortigate"],
+        "title": ["fortinet"],
+        "upnp": ["fortinet"],
+        "ssl": ["fortinet"],
+    },
+    {
+        "name": "paloalto",
+        "server": ["paloalto"],
+        "title": ["palo alto"],
+        "upnp": ["palo"],
+        "ssl": ["palo alto"],
+    },
+    {
+        "name": "arris",
+        "server": ["arris"],
+        "title": ["arris"],
+        "upnp": ["arris"],
+        "ssl": [],
+    },
+    {
+        "name": "technicolor",
+        "server": ["technicolor"],
+        "title": ["technicolor"],
+        "upnp": ["technicolor"],
+        "ssl": [],
+    },
+    {
+        "name": "sagemcom",
+        "server": ["sagemcom"],
+        "title": ["sagemcom"],
+        "upnp": ["sagemcom"],
+        "ssl": [],
+    },
+    {
+        "name": "belkin",
+        "server": ["belkin"],
+        "title": ["belkin"],
+        "upnp": ["belkin"],
+        "ssl": [],
+    },
+    {
+        "name": "zyxel",
+        "server": ["zyxel"],
+        "title": ["zyxel"],
+        "upnp": ["zyxel"],
+        "ssl": [],
+    },
+    {
+        "name": "draytek",
+        "server": ["draytek"],
+        "title": ["draytek"],
+        "upnp": ["draytek"],
+        "ssl": [],
+    },
+    {
+        "name": "openwrt",
+        "server": ["openwrt"],
+        "title": ["openwrt"],
+        "upnp": ["openwrt"],
+        "ssl": [],
+    },
+    {
+        "name": "dd-wrt",
+        "server": ["dd-wrt"],
+        "title": ["dd-wrt"],
+        "upnp": ["dd-wrt"],
+        "ssl": [],
+    },
+    {
+        "name": "edgeos",
+        "server": ["edgeos"],
+        "title": ["edgeos"],
+        "upnp": ["edgeos"],
+        "ssl": [],
+    },
+    {
+        "name": "synology",
+        "server": ["synology"],
+        "title": ["synology"],
+        "upnp": ["synology"],
+        "ssl": [],
+    },
+    {
+        "name": "qnap",
+        "server": ["qnap"],
+        "title": ["qnap"],
+        "upnp": ["qnap"],
+        "ssl": [],
+    },
+    {
+        "name": "arris-surfboard",
+        "server": ["surfboard"],
+        "title": ["surfboard"],
+        "upnp": ["surfboard"],
+        "ssl": [],
+    },
+    {
+        "name": "hitron",
+        "server": ["hitron"],
+        "title": ["hitron"],
+        "upnp": ["hitron"],
+        "ssl": [],
+    },
+    {
+        "name": "thomson",
+        "server": ["thomson"],
+        "title": ["thomson"],
+        "upnp": ["thomson"],
+        "ssl": [],
+    },
+    {
+        "name": "billion",
+        "server": ["billion"],
+        "title": ["billion"],
+        "upnp": ["billion"],
+        "ssl": [],
+    },
     {"name": "smc", "server": ["smc"], "title": ["smc"], "upnp": ["smc"], "ssl": []},
-    {"name": "motorola", "server": ["motorola"], "title": ["motorola"], "upnp": ["motorola"], "ssl": []},
-    {"name": "actiontec", "server": ["actiontec"], "title": ["actiontec"], "upnp": ["actiontec"], "ssl": []},
-    {"name": "comtrend", "server": ["comtrend"], "title": ["comtrend"], "upnp": ["comtrend"], "ssl": []},
-    {"name": "ruckus", "server": ["ruckus"], "title": ["ruckus"], "upnp": ["ruckus"], "ssl": []},
-    {"name": "aruba", "server": ["aruba"], "title": ["aruba"], "upnp": ["aruba"], "ssl": []},
-    {"name": "meraki", "server": ["meraki"], "title": ["meraki"], "upnp": ["meraki"], "ssl": []},
-    {"name": "sophos", "server": ["sophos"], "title": ["sophos"], "upnp": ["sophos"], "ssl": []},
-    {"name": "watchguard", "server": ["watchguard"], "title": ["watchguard"], "upnp": ["watchguard"], "ssl": []},
-    {"name": "checkpoint", "server": ["check point"], "title": ["checkpoint"], "upnp": ["checkpoint"], "ssl": []},
-    {"name": "sonicwall", "server": ["sonicwall"], "title": ["sonicwall"], "upnp": ["sonicwall"], "ssl": []},
-    {"name": "cambium", "server": ["cambium"], "title": ["cambium"], "upnp": ["cambium"], "ssl": []},
-    {"name": "grandstream", "server": ["grandstream"], "title": ["grandstream"], "upnp": ["grandstream"], "ssl": []},
-    {"name": "airties", "server": ["airties"], "title": ["airties"], "upnp": ["airties"], "ssl": []},
-    {"name": "alcatel", "server": ["alcatel"], "title": ["alcatel"], "upnp": ["alcatel"], "ssl": []},
-    {"name": "calix", "server": ["calix"], "title": ["calix"], "upnp": ["calix"], "ssl": []},
-    {"name": "plume", "server": ["plume"], "title": ["plume"], "upnp": ["plume"], "ssl": []},
-    {"name": "ruckus-icx", "server": ["icx"], "title": ["icx"], "upnp": ["ruckus"], "ssl": []},
-    {"name": "speedport", "server": ["speedport"], "title": ["speedport"], "upnp": ["speedport"], "ssl": []},
-    {"name": "vodafone", "server": ["vodafone"], "title": ["vodafone"], "upnp": ["vodafone"], "ssl": []},
+    {
+        "name": "motorola",
+        "server": ["motorola"],
+        "title": ["motorola"],
+        "upnp": ["motorola"],
+        "ssl": [],
+    },
+    {
+        "name": "actiontec",
+        "server": ["actiontec"],
+        "title": ["actiontec"],
+        "upnp": ["actiontec"],
+        "ssl": [],
+    },
+    {
+        "name": "comtrend",
+        "server": ["comtrend"],
+        "title": ["comtrend"],
+        "upnp": ["comtrend"],
+        "ssl": [],
+    },
+    {
+        "name": "ruckus",
+        "server": ["ruckus"],
+        "title": ["ruckus"],
+        "upnp": ["ruckus"],
+        "ssl": [],
+    },
+    {
+        "name": "aruba",
+        "server": ["aruba"],
+        "title": ["aruba"],
+        "upnp": ["aruba"],
+        "ssl": [],
+    },
+    {
+        "name": "meraki",
+        "server": ["meraki"],
+        "title": ["meraki"],
+        "upnp": ["meraki"],
+        "ssl": [],
+    },
+    {
+        "name": "sophos",
+        "server": ["sophos"],
+        "title": ["sophos"],
+        "upnp": ["sophos"],
+        "ssl": [],
+    },
+    {
+        "name": "watchguard",
+        "server": ["watchguard"],
+        "title": ["watchguard"],
+        "upnp": ["watchguard"],
+        "ssl": [],
+    },
+    {
+        "name": "checkpoint",
+        "server": ["check point"],
+        "title": ["checkpoint"],
+        "upnp": ["checkpoint"],
+        "ssl": [],
+    },
+    {
+        "name": "sonicwall",
+        "server": ["sonicwall"],
+        "title": ["sonicwall"],
+        "upnp": ["sonicwall"],
+        "ssl": [],
+    },
+    {
+        "name": "cambium",
+        "server": ["cambium"],
+        "title": ["cambium"],
+        "upnp": ["cambium"],
+        "ssl": [],
+    },
+    {
+        "name": "grandstream",
+        "server": ["grandstream"],
+        "title": ["grandstream"],
+        "upnp": ["grandstream"],
+        "ssl": [],
+    },
+    {
+        "name": "airties",
+        "server": ["airties"],
+        "title": ["airties"],
+        "upnp": ["airties"],
+        "ssl": [],
+    },
+    {
+        "name": "alcatel",
+        "server": ["alcatel"],
+        "title": ["alcatel"],
+        "upnp": ["alcatel"],
+        "ssl": [],
+    },
+    {
+        "name": "calix",
+        "server": ["calix"],
+        "title": ["calix"],
+        "upnp": ["calix"],
+        "ssl": [],
+    },
+    {
+        "name": "plume",
+        "server": ["plume"],
+        "title": ["plume"],
+        "upnp": ["plume"],
+        "ssl": [],
+    },
+    {
+        "name": "ruckus-icx",
+        "server": ["icx"],
+        "title": ["icx"],
+        "upnp": ["ruckus"],
+        "ssl": [],
+    },
+    {
+        "name": "speedport",
+        "server": ["speedport"],
+        "title": ["speedport"],
+        "upnp": ["speedport"],
+        "ssl": [],
+    },
+    {
+        "name": "vodafone",
+        "server": ["vodafone"],
+        "title": ["vodafone"],
+        "upnp": ["vodafone"],
+        "ssl": [],
+    },
     {"name": "cox", "server": ["cox"], "title": ["cox"], "upnp": ["cox"], "ssl": []},
-    {"name": "xfinity", "server": ["xfinity"], "title": ["xfinity"], "upnp": ["xfinity"], "ssl": []},
-    {"name": "spectrum", "server": ["spectrum"], "title": ["spectrum"], "upnp": ["spectrum"], "ssl": []},
-    {"name": "centurylink", "server": ["centurylink"], "title": ["centurylink"], "upnp": ["centurylink"], "ssl": []},
+    {
+        "name": "xfinity",
+        "server": ["xfinity"],
+        "title": ["xfinity"],
+        "upnp": ["xfinity"],
+        "ssl": [],
+    },
+    {
+        "name": "spectrum",
+        "server": ["spectrum"],
+        "title": ["spectrum"],
+        "upnp": ["spectrum"],
+        "ssl": [],
+    },
+    {
+        "name": "centurylink",
+        "server": ["centurylink"],
+        "title": ["centurylink"],
+        "upnp": ["centurylink"],
+        "ssl": [],
+    },
 ]
 VULN_FIRMWARE: Dict[str, List[str]] = {
     "tp-link": ["1.0.0", "1.0.1"],
@@ -172,7 +616,15 @@ class RouterExplorer:
         self._on_event = on_event
         self._logger = logger or logging.getLogger("specter.router")
         self._correlation_hook = correlation_hook
-        self._paths = ["/admin", "/login", "/cgi-bin", "/webadmin", "/phpMyAdmin", "/wp-admin", "/manager/html"]
+        self._paths = [
+            "/admin",
+            "/login",
+            "/cgi-bin",
+            "/webadmin",
+            "/phpMyAdmin",
+            "/wp-admin",
+            "/manager/html",
+        ]
         self._vendor_paths = {
             "tp-link": ["/webpages", "/userRpm"],
             "d-link": ["/home.htm", "/login.htm"],
@@ -184,7 +636,9 @@ class RouterExplorer:
             "mikrotik": ["/webfig"],
         }
 
-    async def explore(self, device: Device, session: aiohttp.ClientSession, rate_limiter: RateLimiter) -> Device:
+    async def explore(
+        self, device: Device, session: aiohttp.ClientSession, rate_limiter: RateLimiter
+    ) -> Device:
         """Explore router exposure and add findings.
 
         Args:
@@ -227,7 +681,9 @@ class RouterExplorer:
             if self._correlation_hook:
                 await self._correlation_hook(fingerprint.vendor)
         if self._router_scan_enabled:
-            creds = await self.test_default_credentials(device.ip, fingerprint.vendor or "", session, rate_limiter)
+            creds = await self.test_default_credentials(
+                device.ip, fingerprint.vendor or "", session, rate_limiter
+            )
             if creds:
                 user, _ = creds
                 findings.append(
@@ -239,7 +695,9 @@ class RouterExplorer:
                         exploit_db_id=None,
                     )
                 )
-                info = await self._gather_admin_info(device.ip, creds[0], creds[1], session)
+                info = await self._gather_admin_info(
+                    device.ip, creds[0], creds[1], session
+                )
                 for item in info:
                     findings.append(
                         Vulnerability(
@@ -327,14 +785,18 @@ class RouterExplorer:
         for path in paths:
             await rate_limiter.acquire()
             try:
-                async with session.get(f"http://{ip}{path}", timeout=self._timeout) as response:
+                async with session.get(
+                    f"http://{ip}{path}", timeout=self._timeout
+                ) as response:
                     if response.status in {200, 401, 403}:
                         found.append(path)
             except Exception:
                 continue
         return found
 
-    async def grab_router_fingerprint(self, ip: str, port: int, session: aiohttp.ClientSession) -> RouterFingerprint:
+    async def grab_router_fingerprint(
+        self, ip: str, port: int, session: aiohttp.ClientSession
+    ) -> RouterFingerprint:
         """Collect router fingerprint data from HTTP resources.
 
         Args:
@@ -367,7 +829,9 @@ class RouterExplorer:
         except Exception:
             pass
         try:
-            async with session.get(f"http://{ip}:{port}/favicon.ico", timeout=self._timeout) as response:
+            async with session.get(
+                f"http://{ip}:{port}/favicon.ico", timeout=self._timeout
+            ) as response:
                 data = await response.read()
                 favicon_hash = hashlib.md5(data).hexdigest() if data else None
         except Exception:
@@ -377,7 +841,9 @@ class RouterExplorer:
             if entry.get("location", "").find(ip) >= 0:
                 upnp_server = entry.get("server")
                 break
-        vendor = self._match_vendor(server, title, favicon_hash, ssl_issuer, upnp_server)
+        vendor = self._match_vendor(
+            server, title, favicon_hash, ssl_issuer, upnp_server
+        )
         return RouterFingerprint(
             vendor=vendor,
             title=title,
@@ -389,7 +855,11 @@ class RouterExplorer:
         )
 
     async def test_default_credentials(
-        self, ip: str, vendor: str, session: aiohttp.ClientSession, rate_limiter: RateLimiter
+        self,
+        ip: str,
+        vendor: str,
+        session: aiohttp.ClientSession,
+        rate_limiter: RateLimiter,
     ) -> Optional[Tuple[str, str]]:
         """Test default credentials for a vendor.
 
@@ -529,7 +999,9 @@ class RouterExplorer:
             )
         return findings
 
-    async def _try_basic_auth(self, ip: str, username: str, password: str, session: aiohttp.ClientSession) -> bool:
+    async def _try_basic_auth(
+        self, ip: str, username: str, password: str, session: aiohttp.ClientSession
+    ) -> bool:
         """Attempt HTTP basic authentication.
 
         Args:
@@ -549,7 +1021,9 @@ class RouterExplorer:
             >>> pass"""
         try:
             async with session.get(
-                f"http://{ip}/", auth=aiohttp.BasicAuth(username, password), timeout=self._timeout
+                f"http://{ip}/",
+                auth=aiohttp.BasicAuth(username, password),
+                timeout=self._timeout,
             ) as response:
                 if response.status == 200:
                     text = await response.text(errors="ignore")
@@ -580,7 +1054,9 @@ class RouterExplorer:
         except Exception:
             return False
 
-    async def _check_dns_rebinding(self, ip: str, session: aiohttp.ClientSession) -> bool:
+    async def _check_dns_rebinding(
+        self, ip: str, session: aiohttp.ClientSession
+    ) -> bool:
         """Check for weak DNS rebinding protection.
 
         Args:
@@ -598,7 +1074,9 @@ class RouterExplorer:
             >>> pass"""
         try:
             headers = {"Host": "example.com"}
-            async with session.get(f"http://{ip}/", headers=headers, timeout=self._timeout) as response:
+            async with session.get(
+                f"http://{ip}/", headers=headers, timeout=self._timeout
+            ) as response:
                 return response.status < 400
         except Exception:
             return False
@@ -618,7 +1096,11 @@ class RouterExplorer:
         Example:
             >>> # Example usage of _check_tr069
             >>> pass"""
-        return await self._tcp_probe(ip, 7547) or await self._tcp_probe(ip, 7548) or await self._tcp_probe(ip, 4567)
+        return (
+            await self._tcp_probe(ip, 7547)
+            or await self._tcp_probe(ip, 7548)
+            or await self._tcp_probe(ip, 4567)
+        )
 
     async def _check_snmp_write(self, ip: str) -> bool:
         """Check if common SNMP write communities succeed.
@@ -680,7 +1162,9 @@ class RouterExplorer:
                 continue
         return False
 
-    async def _check_upnp_exposed(self, ip: str, session: aiohttp.ClientSession) -> bool:
+    async def _check_upnp_exposed(
+        self, ip: str, session: aiohttp.ClientSession
+    ) -> bool:
         """Check for exposed WAN UPnP services.
 
         Args:
@@ -698,7 +1182,10 @@ class RouterExplorer:
             >>> pass"""
         upnp_info = await self.upnp_discover()
         for entry in upnp_info:
-            if ip in entry.get("location", "") and "wanipconnection" in entry.get("st", "").lower():
+            if (
+                ip in entry.get("location", "")
+                and "wanipconnection" in entry.get("st", "").lower()
+            ):
                 return True
         return False
 
@@ -724,7 +1211,9 @@ class RouterExplorer:
         paths = ["/wps", "/wps_pin", "/wps.htm", "/wifi/wps"]
         for path in paths:
             try:
-                async with session.get(f"http://{ip}{path}", timeout=self._timeout) as response:
+                async with session.get(
+                    f"http://{ip}{path}", timeout=self._timeout
+                ) as response:
                     if response.status == 200:
                         text = await response.text(errors="ignore")
                         if "wps" in text.lower() and "pin" in text.lower():
@@ -733,7 +1222,9 @@ class RouterExplorer:
                 continue
         return False
 
-    async def _check_firmware_version(self, ip: str, session: aiohttp.ClientSession) -> Optional[str]:
+    async def _check_firmware_version(
+        self, ip: str, session: aiohttp.ClientSession
+    ) -> Optional[str]:
         """Check for known vulnerable firmware versions.
 
         Args:
@@ -757,7 +1248,11 @@ class RouterExplorer:
                 text = await response.text(errors="ignore")
         except Exception:
             return None
-        version_match = re.search("firmware\\s*(?:version)?\\s*[:#]?\\s*([0-9A-Za-z\\._-]+)", text, re.IGNORECASE)
+        version_match = re.search(
+            "firmware\\s*(?:version)?\\s*[:#]?\\s*([0-9A-Za-z\\._-]+)",
+            text,
+            re.IGNORECASE,
+        )
         if not version_match:
             return None
         version = version_match.group(1)
@@ -766,7 +1261,9 @@ class RouterExplorer:
                 return f"Firmware {version} matches known vulnerable list for {vendor}"
         return None
 
-    async def _check_csrf_weakness(self, ip: str, session: aiohttp.ClientSession) -> bool:
+    async def _check_csrf_weakness(
+        self, ip: str, session: aiohttp.ClientSession
+    ) -> bool:
         """Detect missing CSRF tokens in admin forms.
 
         Args:
@@ -839,7 +1336,9 @@ class RouterExplorer:
         auth = aiohttp.BasicAuth(username, password)
         for path in endpoints:
             try:
-                async with session.get(f"http://{ip}{path}", auth=auth, timeout=self._timeout) as response:
+                async with session.get(
+                    f"http://{ip}{path}", auth=auth, timeout=self._timeout
+                ) as response:
                     if response.status != 200:
                         continue
                     text = await response.text(errors="ignore")
@@ -872,7 +1371,9 @@ class RouterExplorer:
             >>> # Example usage of _tcp_probe
             >>> pass"""
         try:
-            reader, writer = await asyncio.wait_for(asyncio.open_connection(ip, port), timeout=self._timeout)
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(ip, port), timeout=self._timeout
+            )
             writer.close()
             await writer.wait_closed()
             return True
@@ -1036,6 +1537,11 @@ class RouterExplorer:
             >>> pass"""
         for header, value in session.headers.items():
             combined = f"{header}:{value}".lower()
-            if any((token in combined for token in ["cloudflare", "sucuri", "akamai", "imperva", "fastly"])):
+            if any(
+                (
+                    token in combined
+                    for token in ["cloudflare", "sucuri", "akamai", "imperva", "fastly"]
+                )
+            ):
                 return True
         return False

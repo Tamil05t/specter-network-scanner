@@ -32,10 +32,16 @@ def sample_devices():
             mac="00:11:22:33:44:55",
             hostname="gateway",
             open_ports=[80, 443, 22],
-            services=[Service(80, "tcp", "http", "nginx"), Service(443, "tcp", "https")],
+            services=[
+                Service(80, "tcp", "http", "nginx"),
+                Service(443, "tcp", "https"),
+            ],
         ),
         Device(
-            ip="192.168.1.100", mac="aa:bb:cc:dd:ee:ff", open_ports=[445, 3389], services=[Service(445, "tcp", "smb")]
+            ip="192.168.1.100",
+            mac="aa:bb:cc:dd:ee:ff",
+            open_ports=[445, 3389],
+            services=[Service(445, "tcp", "smb")],
         ),
         Device(
             ip="192.168.1.101",
@@ -43,7 +49,12 @@ def sample_devices():
             open_ports=[1900, 5353],
             services=[Service(1900, "udp", "upnp")],
         ),
-        Device(ip="10.0.0.1", mac=None, open_ports=[53, 161], services=[Service(161, "udp", "snmp")]),
+        Device(
+            ip="10.0.0.1",
+            mac=None,
+            open_ports=[53, 161],
+            services=[Service(161, "udp", "snmp")],
+        ),
     ]
 
 
@@ -70,10 +81,18 @@ class TestDeviceClassifier:
         assert DeviceClassifier().classify_by_open_ports([]) == "unknown"
 
     def test_classify_by_services_unknown(self):
-        assert DeviceClassifier().classify_by_services([Service(9999, "tcp", "unknown_svc")]) == "unknown"
+        assert (
+            DeviceClassifier().classify_by_services(
+                [Service(9999, "tcp", "unknown_svc")]
+            )
+            == "unknown"
+        )
 
     def test_guess_os_network_device(self):
-        assert DeviceClassifier().guess_os(FingerprintData(ttl=255)).name == "network_device"
+        assert (
+            DeviceClassifier().guess_os(FingerprintData(ttl=255)).name
+            == "network_device"
+        )
 
     def test_guess_os_none_ttl(self):
         r = DeviceClassifier().guess_os(FingerprintData(ttl=None))
@@ -102,7 +121,9 @@ class TestNetworkMapperHelpers:
         assert mapper._guess_os_from_ttl(30) == "unknown"
 
     def test_guess_os_from_fingerprint_windows(self, mapper):
-        r = mapper._guess_os_from_fingerprint(FingerprintData(ttl=128, window_size=64240))
+        r = mapper._guess_os_from_fingerprint(
+            FingerprintData(ttl=128, window_size=64240)
+        )
         assert r.name == "windows" and r.confidence >= 0.75
 
     def test_guess_os_from_fingerprint_linux(self, mapper):
@@ -110,7 +131,9 @@ class TestNetworkMapperHelpers:
         assert r.name == "linux" and r.confidence >= 0.75
 
     def test_guess_os_from_fingerprint_fallback(self, mapper):
-        assert isinstance(mapper._guess_os_from_fingerprint(FingerprintData(ttl=99)), OSGuess)
+        assert isinstance(
+            mapper._guess_os_from_fingerprint(FingerprintData(ttl=99)), OSGuess
+        )
 
     def test_guess_gateway(self, mapper):
         assert mapper._guess_gateway([]) is None
@@ -133,8 +156,14 @@ class TestNetworkMapperHelpers:
         assert mapper._parse_dhcp_option_55(None) == []
 
     def test_parse_user_agent_family(self, mapper):
-        assert mapper._parse_user_agent_family("Mozilla/5.0 (Windows NT 10.0)") == "windows"
-        assert mapper._parse_user_agent_family("Mozilla/5.0 (X11; Linux x86_64)") == "linux"
+        assert (
+            mapper._parse_user_agent_family("Mozilla/5.0 (Windows NT 10.0)")
+            == "windows"
+        )
+        assert (
+            mapper._parse_user_agent_family("Mozilla/5.0 (X11; Linux x86_64)")
+            == "linux"
+        )
         assert mapper._parse_user_agent_family(None) is None
 
     def test_parse_smb_dialect(self, mapper):
@@ -247,11 +276,17 @@ class TestDeviceClassification:
 
 class TestDetection:
     def test_detect_honeypot_cowrie(self, mapper):
-        device = Device(ip="10.0.0.1", services=[Service(22, "tcp", "ssh", "Cowrie_2.0", banner="cowrie_2.0")])
+        device = Device(
+            ip="10.0.0.1",
+            services=[Service(22, "tcp", "ssh", "Cowrie_2.0", banner="cowrie_2.0")],
+        )
         assert mapper.detect_honeypot(device) == "cowrie"
 
     def test_detect_honeypot_telnet(self, mapper):
-        assert mapper.detect_honeypot(Device(ip="10.0.0.1", open_ports=[22, 23])) == "ssh_telnet_honeypot_suspect"
+        assert (
+            mapper.detect_honeypot(Device(ip="10.0.0.1", open_ports=[22, 23]))
+            == "ssh_telnet_honeypot_suspect"
+        )
 
     def test_detect_honeypot_none(self, mapper):
         assert mapper.detect_honeypot(Device(ip="10.0.0.1", open_ports=[80])) is None
@@ -267,7 +302,9 @@ class TestVLANNAT:
         assert "192.168.1.0" in mapper.detect_vlan_segments(sample_devices)
 
     def test_detect_nat(self, mapper):
-        assert "private_to_public" in mapper.detect_nat_boundaries([Device(ip="192.168.1.1"), Device(ip="8.8.8.8")])
+        assert "private_to_public" in mapper.detect_nat_boundaries(
+            [Device(ip="192.168.1.1"), Device(ip="8.8.8.8")]
+        )
 
 
 class TestExports:
@@ -300,7 +337,13 @@ class TestGeolocation:
     def test_geolocate_success(self, mock_get, mapper):
         mock_resp = AsyncMock(status=200)
         mock_resp.json = AsyncMock(
-            return_value={"status": "success", "country": "US", "regionName": "CA", "city": "MV", "isp": "G"}
+            return_value={
+                "status": "success",
+                "country": "US",
+                "regionName": "CA",
+                "city": "MV",
+                "isp": "G",
+            }
         )
         mock_resp.__aenter__.return_value = mock_resp
         mock_get.return_value = mock_resp
@@ -317,7 +360,11 @@ class TestGeolocation:
 
 class TestSNMP:
     def test_snmp_no_pysnmp(self, mapper, sample_devices):
-        with patch("specter.scanners.network_mapper.nextCmd", create=True, side_effect=ImportError):
+        with patch(
+            "specter.scanners.network_mapper.nextCmd",
+            create=True,
+            side_effect=ImportError,
+        ):
             assert asyncio.run(mapper._snmp_routing_edges(sample_devices)) == []
 
     def test_iterate_snmp(self, mapper):
@@ -351,7 +398,9 @@ async def test_mapper_discovery_fallbacks(mapper):
 @pytest.mark.asyncio
 async def test_mapper_traceroute_paths(mapper):
     mapper.traceroute = AsyncMock(return_value=[{"hop": 1, "ip": "192.168.1.1"}])
-    mapper.detect_vlan_segments = MagicMock(return_value={"192.168.1.0/24": ["192.168.1.2"]})
+    mapper.detect_vlan_segments = MagicMock(
+        return_value={"192.168.1.0/24": ["192.168.1.2"]}
+    )
     mapper.detect_nat_boundaries = MagicMock(return_value=["private_to_public"])
     try:
         await mapper.analyze_topology([Device("192.168.1.2")])

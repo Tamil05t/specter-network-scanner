@@ -22,12 +22,20 @@ def run_scheduled_scan(target: str, **kwargs):
     subprocess.Popen(cmd)
 
 
-def add_schedule(schedule_type: str, time_str: str, target: str, day: str = None, date: str = None):
+def add_schedule(
+    schedule_type: str, time_str: str, target: str, day: str = None, date: str = None
+):
     """Save configuration and block to run scheduler."""
     # Ensure dir exists
     SCHEDULE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-    config = {"type": schedule_type, "time": time_str, "target": target, "day": day, "date": date}
+    config = {
+        "type": schedule_type,
+        "time": time_str,
+        "target": target,
+        "day": day,
+        "date": date,
+    }
 
     # Save to disk
     schedules = []
@@ -48,13 +56,29 @@ def add_schedule(schedule_type: str, time_str: str, target: str, day: str = None
     hour, minute = time_str.split(":")
 
     if schedule_type == "daily":
-        scheduler.add_job(run_scheduled_scan, "cron", hour=hour, minute=minute, args=[target])
+        scheduler.add_job(
+            run_scheduled_scan, "cron", hour=hour, minute=minute, args=[target]
+        )
     elif schedule_type == "weekly" and day:
         # apscheduler days: mon, tue, wed, thu, fri, sat, sun
         short_day = day[:3].lower()
-        scheduler.add_job(run_scheduled_scan, "cron", day_of_week=short_day, hour=hour, minute=minute, args=[target])
+        scheduler.add_job(
+            run_scheduled_scan,
+            "cron",
+            day_of_week=short_day,
+            hour=hour,
+            minute=minute,
+            args=[target],
+        )
     elif schedule_type == "monthly" and date:
-        scheduler.add_job(run_scheduled_scan, "cron", day=date, hour=hour, minute=minute, args=[target])
+        scheduler.add_job(
+            run_scheduled_scan,
+            "cron",
+            day=date,
+            hour=hour,
+            minute=minute,
+            args=[target],
+        )
 
     console.print("[bold yellow]Starting blocking scheduler. Press Ctrl+C to exit.[/]")
     try:

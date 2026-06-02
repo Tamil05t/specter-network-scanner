@@ -12,7 +12,11 @@ async def send_webhook_alert(url: str, event_type: str, scan_result: dict = None
     if not url:
         return
 
-    payload = {"event": event_type, "message": f"Specter Scan: {event_type.upper()}", "details": scan_result or {}}
+    payload = {
+        "event": event_type,
+        "message": f"Specter Scan: {event_type.upper()}",
+        "details": scan_result or {},
+    }
 
     def _post():
         try:

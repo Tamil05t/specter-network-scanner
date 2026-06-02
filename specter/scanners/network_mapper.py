@@ -189,7 +189,10 @@ class NetworkMapper:
     """Network discovery and OS fingerprinting engine."""
 
     def __init__(
-        self, timeout: float = 1.0, cache_dir: str = ".specter-cache", logger: Optional[logging.Logger] = None
+        self,
+        timeout: float = 1.0,
+        cache_dir: str = ".specter-cache",
+        logger: Optional[logging.Logger] = None,
     ) -> None:
         """Initialize network discovery and fingerprinting engine.
 
@@ -216,7 +219,10 @@ class NetworkMapper:
         self._oui_map: Dict[str, str] = {}
         self._classifier = DeviceClassifier(self._oui_map)
         self._p0f_signatures = self._load_p0f_signatures()
-        self._honeypot_signatures = {"cowrie": ["cowrie", "kippo"], "dionaea": ["dionaea"]}
+        self._honeypot_signatures = {
+            "cowrie": ["cowrie", "kippo"],
+            "dionaea": ["dionaea"],
+        }
         self._virtual_mac_prefixes = {
             "00:05:69": "vmware",
             "00:0C:29": "vmware",
@@ -227,7 +233,9 @@ class NetworkMapper:
         }
         self._geo_cache: Dict[str, Dict[str, str]] = {}
 
-    async def discover(self, targets: Iterable[str], rate_limiter: RateLimiter) -> List[Device]:
+    async def discover(
+        self, targets: Iterable[str], rate_limiter: RateLimiter
+    ) -> List[Device]:
         """Run all discovery methods and deduplicate by MAC.
 
         Args:
@@ -315,7 +323,9 @@ class NetworkMapper:
 
         return await asyncio.to_thread(run_scan)
 
-    async def icmp_ping_sweep(self, network_range: str, count: int = 2, timeout: float = 1.0) -> List[Device]:
+    async def icmp_ping_sweep(
+        self, network_range: str, count: int = 2, timeout: float = 1.0
+    ) -> List[Device]:
         """Perform ICMP ping sweep across a subnet.
 
         Args:
@@ -386,12 +396,20 @@ class NetworkMapper:
 
                 ttl = await asyncio.to_thread(send_probe)
                 if ttl is not None:
-                    devices.append(Device(ip=ip, last_seen=datetime.utcnow(), os_guess=self._guess_os_from_ttl(ttl)))
+                    devices.append(
+                        Device(
+                            ip=ip,
+                            last_seen=datetime.utcnow(),
+                            os_guess=self._guess_os_from_ttl(ttl),
+                        )
+                    )
 
         await asyncio.gather(*(probe(ip) for ip in hosts))
         return devices
 
-    async def tcp_ping_sweep(self, network_range: str, ports: Optional[Sequence[int]] = None) -> List[Device]:
+    async def tcp_ping_sweep(
+        self, network_range: str, ports: Optional[Sequence[int]] = None
+    ) -> List[Device]:
         """Perform TCP SYN ping sweep across a subnet.
 
         Args:
@@ -447,11 +465,17 @@ class NetworkMapper:
                             TODO
                         """
                         try:
-                            reply = sr1(IP(dst=ip) / TCP(dport=port, flags="S"), timeout=self._timeout, verbose=False)
+                            reply = sr1(
+                                IP(dst=ip) / TCP(dport=port, flags="S"),
+                                timeout=self._timeout,
+                                verbose=False,
+                            )
                             if reply and reply.haslayer(TCP):
                                 return True
                         except PermissionError:
-                            self._logger.warning("TCP SYN sweep requires elevated privileges")
+                            self._logger.warning(
+                                "TCP SYN sweep requires elevated privileges"
+                            )
                         except Exception:
                             return False
                         return False
@@ -522,9 +546,18 @@ class NetworkMapper:
                         reply = sr1(pkt, timeout=self._timeout, verbose=False)
                         if reply and reply.haslayer(ICMP):
                             icmp = reply.getlayer(ICMP)
-                            return int(icmp.type) == 3 and int(icmp.code) in {1, 2, 3, 9, 10, 13}
+                            return int(icmp.type) == 3 and int(icmp.code) in {
+                                1,
+                                2,
+                                3,
+                                9,
+                                10,
+                                13,
+                            }
                     except PermissionError:
-                        self._logger.warning("UDP discovery requires elevated privileges")
+                        self._logger.warning(
+                            "UDP discovery requires elevated privileges"
+                        )
                     except Exception:
                         return False
                     return False
@@ -551,7 +584,9 @@ class NetworkMapper:
         Example:
             >>> # Example usage of mdns_discovery
             >>> pass"""
-        query = "\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x05_local\x00\x00\x0c\x00\x01".encode("latin-1")
+        query = "\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x05_local\x00\x00\x0c\x00\x01".encode(
+            "latin-1"
+        )
         return await self._multicast_query("224.0.0.251", 5353, query)
 
     async def ssdp_discovery(self) -> List[Device]:
@@ -590,7 +625,9 @@ class NetworkMapper:
             >>> # Example usage of netbios_discovery
             >>> pass"""
         query = self._build_netbios_query()
-        return await self._multicast_query("255.255.255.255", 137, query, broadcast=True)
+        return await self._multicast_query(
+            "255.255.255.255", 137, query, broadcast=True
+        )
 
     async def passive_fingerprint(self, metadata: Dict[str, str]) -> FingerprintData:
         """Build fingerprint data from passive metadata.
@@ -659,24 +696,50 @@ class NetworkMapper:
             """
             try:
                 syn_pkt = IP(dst=ip) / TCP(
-                    dport=80, flags="S", options=[("MSS", 1460), ("SAckOK", b""), ("TS", (0, 0))]
+                    dport=80,
+                    flags="S",
+                    options=[("MSS", 1460), ("SAckOK", b""), ("TS", (0, 0))],
                 )
                 reply = sr1(syn_pkt, timeout=self._timeout, verbose=False)
                 ttl = int(reply.ttl) if reply else None
                 window = int(getattr(reply, "window", 0)) if reply else None
-                tcp_opts = [opt[0] for opt in getattr(reply, "options", []) if isinstance(opt, tuple)] if reply else []
-                tcp_order = [opt[0] for opt in getattr(reply, "options", []) if isinstance(opt, tuple)] if reply else []
+                tcp_opts = (
+                    [
+                        opt[0]
+                        for opt in getattr(reply, "options", [])
+                        if isinstance(opt, tuple)
+                    ]
+                    if reply
+                    else []
+                )
+                tcp_order = (
+                    [
+                        opt[0]
+                        for opt in getattr(reply, "options", [])
+                        if isinstance(opt, tuple)
+                    ]
+                    if reply
+                    else []
+                )
                 df_bit = None
                 if reply and reply.haslayer(IP):
                     try:
                         df_bit = "DF" in reply.getlayer(IP).flags
                     except Exception:
                         df_bit = None
-                tcp_flags = [str(reply.sprintf("%TCP.flags%"))] if reply and reply.haslayer(TCP) else []
+                tcp_flags = (
+                    [str(reply.sprintf("%TCP.flags%"))]
+                    if reply and reply.haslayer(TCP)
+                    else []
+                )
                 icmp_types: List[int] = []
                 icmp_codes: List[int] = []
                 for icmp_type in [8, 13, 17, 15]:
-                    icmp_reply = sr1(IP(dst=ip) / ICMP(type=icmp_type), timeout=self._timeout, verbose=False)
+                    icmp_reply = sr1(
+                        IP(dst=ip) / ICMP(type=icmp_type),
+                        timeout=self._timeout,
+                        verbose=False,
+                    )
                     if icmp_reply and icmp_reply.haslayer(ICMP):
                         icmp_layer = icmp_reply.getlayer(ICMP)
                         icmp_types.append(int(icmp_layer.type))
@@ -696,7 +759,9 @@ class NetworkMapper:
 
         return await asyncio.to_thread(run_probe)
 
-    def classify_device(self, device: Device, fingerprints: Optional[FingerprintData] = None) -> Tuple[str, OSGuess]:
+    def classify_device(
+        self, device: Device, fingerprints: Optional[FingerprintData] = None
+    ) -> Tuple[str, OSGuess]:
         """Classify device type and OS guess.
 
         Args:
@@ -754,7 +819,9 @@ class NetworkMapper:
             topology.setdefault(parent, []).append(child)
         return self._dedup_topology(topology)
 
-    async def generate_network_map(self, devices: List[Device], output_path: str) -> None:
+    async def generate_network_map(
+        self, devices: List[Device], output_path: str
+    ) -> None:
         """Generate an interactive HTML network map.
 
         Args:
@@ -852,7 +919,12 @@ class NetworkMapper:
                     "virtualization": virtualization,
                     "open_ports": device.open_ports,
                     "services": [
-                        {"port": svc.port, "protocol": svc.protocol, "name": svc.service_name, "version": svc.version}
+                        {
+                            "port": svc.port,
+                            "protocol": svc.protocol,
+                            "name": svc.service_name,
+                            "version": svc.version,
+                        }
                         for svc in device.services
                     ],
                 }
@@ -905,7 +977,9 @@ class NetworkMapper:
         prefix = mac.replace("-", ":").upper()[0:8]
         return self._virtual_mac_prefixes.get(prefix)
 
-    def wake_on_lan(self, mac: str, broadcast_ip: str = "255.255.255.255", port: int = 9) -> None:
+    def wake_on_lan(
+        self, mac: str, broadcast_ip: str = "255.255.255.255", port: int = 9
+    ) -> None:
         """Send a Wake-on-LAN magic packet.
 
         Args:
@@ -1047,7 +1121,9 @@ class NetworkMapper:
         Example:
             >>> # Example usage of _load_oui
             >>> pass"""
-        async with aiofiles.open(path, "r", encoding="utf-8", errors="ignore") as handle:
+        async with aiofiles.open(
+            path, "r", encoding="utf-8", errors="ignore"
+        ) as handle:
             async for line in handle:
                 if "(hex)" not in line:
                     continue
@@ -1207,7 +1283,11 @@ class NetworkMapper:
             for ttl in range(1, max_hops + 1):
                 try:
                     start = time.time()
-                    reply = sr1(IP(dst=ip, ttl=ttl) / ICMP(), timeout=self._timeout, verbose=False)
+                    reply = sr1(
+                        IP(dst=ip, ttl=ttl) / ICMP(),
+                        timeout=self._timeout,
+                        verbose=False,
+                    )
                     if reply is None:
                         continue
                     rtt = (time.time() - start) * 1000
@@ -1246,7 +1326,9 @@ class NetworkMapper:
         """
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"http://ip-api.com/json/{ip}", timeout=5) as response:
+                async with session.get(
+                    f"http://ip-api.com/json/{ip}", timeout=5
+                ) as response:
                     if response.status != 200:
                         return None
                     payload = await response.json()
@@ -1261,7 +1343,9 @@ class NetworkMapper:
         except Exception:
             return None
 
-    async def _multicast_query(self, host: str, port: int, payload: bytes, broadcast: bool = False) -> List[Device]:
+    async def _multicast_query(
+        self, host: str, port: int, payload: bytes, broadcast: bool = False
+    ) -> List[Device]:
         """Send a UDP multicast/broadcast query and collect responses.
 
         Args:
@@ -1293,7 +1377,13 @@ class NetworkMapper:
                     data, addr = await loop.sock_recvfrom(sock, 2048)
                     if addr:
                         hostname = self._parse_hostname(data)
-                        devices.append(Device(ip=addr[0], hostname=hostname, last_seen=datetime.utcnow()))
+                        devices.append(
+                            Device(
+                                ip=addr[0],
+                                hostname=hostname,
+                                last_seen=datetime.utcnow(),
+                            )
+                        )
                 except Exception:
                     break
         finally:
@@ -1364,20 +1454,26 @@ class NetworkMapper:
             >>> pass"""
         table: Dict[str, str] = {}
         try:
-            output = subprocess.check_output(["arp", "-a"], text=True, stderr=subprocess.DEVNULL)
+            output = subprocess.check_output(
+                ["arp", "-a"], text=True, stderr=subprocess.DEVNULL
+            )
             if isinstance(output, bytes):
                 output = output.decode(errors="ignore")
             for line in output.splitlines():
                 # Try to extract IP and MAC in a few common formats
                 ip_match = re.search(r"(\d+\.\d+\.\d+\.\d+)", line)
-                mac_match = re.search(r"([0-9A-Fa-f]{2}(?:[:-][0-9A-Fa-f]{2}){5})", line)
+                mac_match = re.search(
+                    r"([0-9A-Fa-f]{2}(?:[:-][0-9A-Fa-f]{2}){5})", line
+                )
                 if ip_match and mac_match:
                     ip = ip_match.group(1)
                     mac = mac_match.group(1).replace("-", ":").upper()
                     table[mac] = ip
                     continue
                 # Fallback: formats like "? (192.168.1.1) at 00:11:22:33:44:55"
-                fallback = re.search(r"\((\d+\.\d+\.\d+\.\d+)\)\s+at\s+([0-9A-Fa-f:-]{17})", line)
+                fallback = re.search(
+                    r"\((\d+\.\d+\.\d+\.\d+)\)\s+at\s+([0-9A-Fa-f:-]{17})", line
+                )
                 if fallback:
                     ip = fallback.group(1)
                     mac = fallback.group(2).replace("-", ":").upper()
@@ -1543,7 +1639,9 @@ class NetworkMapper:
             >>> pass"""
         try:
             text = payload.decode(errors="ignore")
-            match = re.search("(HOST|USN|SERVER|NAME):\\s*([^\\r\\n]+)", text, re.IGNORECASE)
+            match = re.search(
+                "(HOST|USN|SERVER|NAME):\\s*([^\\r\\n]+)", text, re.IGNORECASE
+            )
             if match:
                 return match.group(2).strip()
         except Exception:

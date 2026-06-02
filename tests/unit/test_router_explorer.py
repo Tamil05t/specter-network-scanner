@@ -185,7 +185,9 @@ async def test_admin_panel_detection(monkeypatch):
             _ = url
             return FakeResponse(200)
 
-    paths = await explorer.detect_admin_panels("127.0.0.1", FakeSession(), rate_limiter=_FakeLimiter())
+    paths = await explorer.detect_admin_panels(
+        "127.0.0.1", FakeSession(), rate_limiter=_FakeLimiter()
+    )
     assert paths
 
 
@@ -257,7 +259,9 @@ async def test_max_attempts_enforced(monkeypatch):
 
         headers = {}
 
-    await explorer.test_default_credentials("127.0.0.1", "tp-link", FakeSession(), rate_limiter=_FakeLimiter())
+    await explorer.test_default_credentials(
+        "127.0.0.1", "tp-link", FakeSession(), rate_limiter=_FakeLimiter()
+    )
     assert calls == 1
 
 
@@ -326,7 +330,9 @@ async def test_default_credential_match(monkeypatch):
 
         headers = {}
 
-    creds = await explorer.test_default_credentials("127.0.0.1", "tp-link", FakeSession(), rate_limiter=_FakeLimiter())
+    creds = await explorer.test_default_credentials(
+        "127.0.0.1", "tp-link", FakeSession(), rate_limiter=_FakeLimiter()
+    )
     assert creds is not None
 
 
@@ -408,10 +414,15 @@ async def test_firmware_version_matching_detects_known():
 @pytest.mark.asyncio
 async def test_extract_wifi_credentials_and_port_forwarding():
     explorer = RouterExplorer()
-    mapping = {"/wireless": "SSID: mynet passphrase: secret", "/port_forwarding": "port forward rules"}
+    mapping = {
+        "/wireless": "SSID: mynet passphrase: secret",
+        "/port_forwarding": "port forward rules",
+    }
     session = SimpleFakeSession(mapping=mapping)
     info = await explorer._gather_admin_info("192.168.1.1", "admin", "admin", session)
-    assert any("WiFi" in s or "credential" in s.lower() or "Port forwarding" in s for s in info)
+    assert any(
+        "WiFi" in s or "credential" in s.lower() or "Port forwarding" in s for s in info
+    )
 
 
 @pytest.mark.asyncio
@@ -449,7 +460,9 @@ async def test_vuln_checks(monkeypatch):
     explorer._check_tr069 = AsyncMock(return_value=True)
     explorer._check_snmp_write = AsyncMock(return_value=True)
     explorer._check_upnp_exposed = AsyncMock(return_value=True)
-    res = await explorer.router_vuln_checks("127.0.0.1", aiohttp.ClientSession(), MagicMock())
+    res = await explorer.router_vuln_checks(
+        "127.0.0.1", aiohttp.ClientSession(), MagicMock()
+    )
     assert res is not None
 
 

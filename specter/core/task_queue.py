@@ -128,7 +128,9 @@ class TaskQueue:
         Note:
             Workers are stored for later awaiting.
         """
-        self._workers = [asyncio.create_task(self.worker()) for _ in range(worker_count)]
+        self._workers = [
+            asyncio.create_task(self.worker()) for _ in range(worker_count)
+        ]
 
     async def join(self) -> None:
         """Wait until all queued tasks complete.

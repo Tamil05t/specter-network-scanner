@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from specter.scanners.network_mapper import DeviceClassifier, FingerprintData, NetworkMapper
+from specter.scanners.network_mapper import (
+    DeviceClassifier,
+    FingerprintData,
+    NetworkMapper,
+)
 
 
 def test_guess_os_by_ttl():

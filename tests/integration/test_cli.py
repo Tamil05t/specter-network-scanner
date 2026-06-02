@@ -98,7 +98,9 @@ def test_cli_env_profile_override(monkeypatch, tmp_path):
     monkeypatch.setattr(main.SpecterScanner, "initialize", fake_init)
     monkeypatch.setattr(main.SpecterScanner, "cleanup", fake_cleanup)
     env = {"SPECTER_PROFILE": "aggressive"}
-    result = runner.invoke(main.cli, ["scan", "-t", "127.0.0.1", "-o", str(tmp_path)], env=env)
+    result = runner.invoke(
+        main.cli, ["scan", "-t", "127.0.0.1", "-o", str(tmp_path)], env=env
+    )
     assert result.exit_code == 0
 
 

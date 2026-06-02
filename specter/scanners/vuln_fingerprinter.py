@@ -61,7 +61,9 @@ class VulnerabilityFingerprinter:
         vulns: List[Vulnerability] = []
         await rate_limiter.acquire()
         try:
-            async with session.get(f"http://{device.ip}", timeout=self._timeout) as response:
+            async with session.get(
+                f"http://{device.ip}", timeout=self._timeout
+            ) as response:
                 server = response.headers.get("Server")
                 if server:
                     vulns.append(

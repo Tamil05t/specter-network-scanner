@@ -97,7 +97,9 @@ class PortScanner:
         self._pause_event = asyncio.Event()
         self._pause_event.set()
         self._circuit_state: Dict[str, CircuitBreakerState] = {}
-        self._conn_pool: Dict[Tuple[str, int], Tuple[asyncio.StreamReader, asyncio.StreamWriter, float]] = {}
+        self._conn_pool: Dict[
+            Tuple[str, int], Tuple[asyncio.StreamReader, asyncio.StreamWriter, float]
+        ] = {}
         self._conn_pool_ttl = 10.0
         self._service_fingerprints = self._build_fingerprints()
 
@@ -142,7 +144,11 @@ class PortScanner:
         self._pause_event.set()
 
     async def scan_tcp_ports(
-        self, target: str, ports: Sequence[int], timeout: Optional[float] = None, concurrency: Optional[int] = None
+        self,
+        target: str,
+        ports: Sequence[int],
+        timeout: Optional[float] = None,
+        concurrency: Optional[int] = None,
     ) -> List[Service]:
         """Scan TCP ports and return Service records.
 
@@ -167,7 +173,11 @@ class PortScanner:
         if self._is_circuit_open(target):
             await self._emit_event("circuit_open", target)
             return []
-        ordered_ports = self._prioritize_ports(list(ports)) if self._randomize_ports else list(ports)
+        ordered_ports = (
+            self._prioritize_ports(list(ports))
+            if self._randomize_ports
+            else list(ports)
+        )
         sem = asyncio.Semaphore(concurrency or self._concurrency)
         results: List[Service] = []
         timeout_value = timeout or self._timeout
@@ -198,7 +208,9 @@ class PortScanner:
         await asyncio.gather(*(scan_port(port) for port in ordered_ports))
         return results
 
-    async def scan_udp_ports(self, target: str, ports: Sequence[int], timeout: Optional[float] = None) -> List[Service]:
+    async def scan_udp_ports(
+        self, target: str, ports: Sequence[int], timeout: Optional[float] = None
+    ) -> List[Service]:
         """Best-effort UDP scan with timeout-based inference.
 
         Args:
@@ -248,7 +260,11 @@ class PortScanner:
                 results.append(service)
                 await self._push_service(service)
 
-        ordered_ports = self._prioritize_ports(list(ports)) if self._randomize_ports else list(ports)
+        ordered_ports = (
+            self._prioritize_ports(list(ports))
+            if self._randomize_ports
+            else list(ports)
+        )
         await asyncio.gather(*(scan_port(port) for port in ordered_ports))
         return results
 
@@ -331,11 +347,19 @@ class PortScanner:
                         cpe_guess=None,
                     )
         return Service(
-            port=port, protocol="tcp", service_name=service_name, version=version, banner=banner, cpe_guess=None
+            port=port,
+            protocol="tcp",
+            service_name=service_name,
+            version=version,
+            banner=banner,
+            cpe_guess=None,
         )
 
     async def scan_device(
-        self, device: Device, ports: Iterable[int], rate_limiter: Optional[RateLimiter] = None
+        self,
+        device: Device,
+        ports: Iterable[int],
+        rate_limiter: Optional[RateLimiter] = None,
     ) -> Device:
         """Scan a device and populate open ports and services.
 
@@ -361,7 +385,9 @@ class PortScanner:
         device.services = services
         return device
 
-    async def _scan_tcp_port(self, target: str, port: int, timeout: float) -> Optional[Service]:
+    async def _scan_tcp_port(
+        self, target: str, port: int, timeout: float
+    ) -> Optional[Service]:
         """Probe a TCP port with retries and backoff.
 
         Args:
@@ -389,7 +415,9 @@ class PortScanner:
                     if not is_open:
                         raise ConnectionRefusedError()
                 else:
-                    reader, writer = await asyncio.wait_for(asyncio.open_connection(target, port), timeout=timeout)
+                    reader, writer = await asyncio.wait_for(
+                        asyncio.open_connection(target, port), timeout=timeout
+                    )
                     writer.close()
                     await writer.wait_closed()
                 banner = await self.grab_banner(target, port, "tcp")
@@ -409,7 +437,9 @@ class PortScanner:
                 await self._backoff(attempt)
         return None
 
-    async def _scan_udp_port(self, target: str, port: int, timeout: float) -> Optional[Service]:
+    async def _scan_udp_port(
+        self, target: str, port: int, timeout: float
+    ) -> Optional[Service]:
         """Probe a UDP port using a datagram and timeout inference.
 
         Args:
@@ -433,7 +463,9 @@ class PortScanner:
             await self._pause_event.wait()
             try:
                 if self._scapy_available():
-                    result = await asyncio.to_thread(self._udp_probe_icmp, target, port, timeout)
+                    result = await asyncio.to_thread(
+                        self._udp_probe_icmp, target, port, timeout
+                    )
                     if result == "closed":
                         self._record_failure(target)
                         return None
@@ -457,7 +489,12 @@ class PortScanner:
                 self._record_success(target)
                 await self._emit_event("udp_probe", target, port)
                 return Service(
-                    port=port, protocol="udp", service_name="open|filtered", version=None, banner=None, cpe_guess=None
+                    port=port,
+                    protocol="udp",
+                    service_name="open|filtered",
+                    version=None,
+                    banner=None,
+                    cpe_guess=None,
                 )
             except PermissionError:
                 await self._emit_event("permission", target, port)
@@ -520,7 +557,9 @@ class PortScanner:
         except Exception:
             return
 
-    async def _emit_event(self, event: str, target: str, port: Optional[int] = None) -> None:
+    async def _emit_event(
+        self, event: str, target: str, port: Optional[int] = None
+    ) -> None:
         """Emit structured events to the optional callback.
 
         Args:
@@ -691,7 +730,9 @@ class PortScanner:
             "http": [
                 re.compile("Server: Apache/?(?P<version>[\\d\\.]+)?", re.IGNORECASE),
                 re.compile("Server: nginx/?(?P<version>[\\d\\.]+)?", re.IGNORECASE),
-                re.compile("Server: Microsoft-IIS/(?P<version>[\\d\\.]+)", re.IGNORECASE),
+                re.compile(
+                    "Server: Microsoft-IIS/(?P<version>[\\d\\.]+)", re.IGNORECASE
+                ),
                 re.compile("Apache Tomcat/(?P<version>[\\d\\.]+)", re.IGNORECASE),
                 re.compile("Express", re.IGNORECASE),
             ],
@@ -775,7 +816,9 @@ class PortScanner:
                 for frag in fragment(pkt, fragsize=self._fragment_size):
                     send(frag, verbose=False)
             reply = sr1(pkt, timeout=self._timeout, verbose=False)
-            return bool(reply and reply.haslayer(TCP) and reply.getlayer(TCP).flags & 18)
+            return bool(
+                reply and reply.haslayer(TCP) and reply.getlayer(TCP).flags & 18
+            )
         except Exception:
             return False
 
@@ -874,14 +917,20 @@ class PortScanner:
         if entry and time.monotonic() - entry[2] < self._conn_pool_ttl:
             return (entry[0], entry[1])
         try:
-            reader, writer = await asyncio.wait_for(asyncio.open_connection(ip, port), timeout=self._timeout)
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(ip, port), timeout=self._timeout
+            )
             self._conn_pool[key] = (reader, writer, time.monotonic())
             return (reader, writer)
         except Exception:
             return (None, None)
 
     async def _release_pooled_connection(
-        self, ip: str, port: int, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+        self,
+        ip: str,
+        port: int,
+        reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
     ) -> None:
         """Release a pooled connection with TTL cleanup.
 

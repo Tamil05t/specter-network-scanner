@@ -43,7 +43,11 @@ def compare_scans(path1: str, path2: str):
 
     for ip in sorted(all_ips):
         if ip not in scan1:
-            table.add_row(ip, "[green]NEW HOST[/]", f"Discovered {len(scan2[ip].get('open_ports', []))} ports")
+            table.add_row(
+                ip,
+                "[green]NEW HOST[/]",
+                f"Discovered {len(scan2[ip].get('open_ports', []))} ports",
+            )
             continue
         if ip not in scan2:
             table.add_row(ip, "[red]MISSING[/]", "Host not seen in scan 2")
@@ -62,8 +66,16 @@ def compare_scans(path1: str, path2: str):
             table.add_row(ip, "[red]PORTS REMOVED[/]", f"{list(removed_ports)}")
 
         # Check vulns
-        v1 = {v.get("cve_id") for v in scan1[ip].get("vulnerabilities", []) if v.get("cve_id")}
-        v2 = {v.get("cve_id") for v in scan2[ip].get("vulnerabilities", []) if v.get("cve_id")}
+        v1 = {
+            v.get("cve_id")
+            for v in scan1[ip].get("vulnerabilities", [])
+            if v.get("cve_id")
+        }
+        v2 = {
+            v.get("cve_id")
+            for v in scan2[ip].get("vulnerabilities", [])
+            if v.get("cve_id")
+        }
 
         added_vulns = v2 - v1
         removed_vulns = v1 - v2

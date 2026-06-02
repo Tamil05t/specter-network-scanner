@@ -76,7 +76,9 @@ class ScannerEngine:
         """
         self._config = config or EngineConfig()
         self._logger = logging.getLogger("specter.engine")
-        self._rate_limiter = RateLimiter(rate=self._config.rate_limit, capacity=self._config.bucket_capacity)
+        self._rate_limiter = RateLimiter(
+            rate=self._config.rate_limit, capacity=self._config.bucket_capacity
+        )
         self._executor = ThreadPoolExecutor(max_workers=self._config.thread_workers)
         self._packets_sent = 0
 
@@ -92,7 +94,9 @@ class ScannerEngine:
             fragment_packets=self._config.fragment_packets,
             fragment_size=self._config.fragment_size,
         )
-        self._vuln_fingerprinter = VulnerabilityFingerprinter(timeout=self._config.request_timeout)
+        self._vuln_fingerprinter = VulnerabilityFingerprinter(
+            timeout=self._config.request_timeout
+        )
         self._router_explorer = RouterExplorer(timeout=self._config.request_timeout)
         self.current_devices: List[Device] = []
 
@@ -121,9 +125,13 @@ class ScannerEngine:
 
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
-                devices = await self._network_mapper.discover(targets=targets, rate_limiter=self._rate_limiter)
+                devices = await self._network_mapper.discover(
+                    targets=targets, rate_limiter=self._rate_limiter
+                )
             except Exception:
-                self._logger.exception("Network discovery failed, falling back to raw targets")
+                self._logger.exception(
+                    "Network discovery failed, falling back to raw targets"
+                )
                 devices = [Device(ip=t) for t in targets]
 
             self.current_devices = devices
@@ -137,7 +145,9 @@ class ScannerEngine:
             try:
                 await self._run_fingerprinting(devices, session)
             except Exception:
-                self._logger.exception("Vulnerability fingerprinting failed, continuing")
+                self._logger.exception(
+                    "Vulnerability fingerprinting failed, continuing"
+                )
 
             try:
                 await self._run_router_exploration(devices, session)
@@ -214,7 +224,9 @@ class ScannerEngine:
         await queue.stop(worker_count)
         await queue.wait_workers()
 
-    async def _run_fingerprinting(self, devices: List[Device], session: aiohttp.ClientSession) -> None:
+    async def _run_fingerprinting(
+        self, devices: List[Device], session: aiohttp.ClientSession
+    ) -> None:
         """Fingerprint devices for vulnerabilities using HTTP checks.
 
         Args:
@@ -265,9 +277,13 @@ class ScannerEngine:
                     TODO
                 """
                 await self._rate_limiter.acquire()
-                await self._vuln_fingerprinter.fingerprint(device, session, self._rate_limiter)
+                await self._vuln_fingerprinter.fingerprint(
+                    device, session, self._rate_limiter
+                )
 
-            await queue.put(TaskItem(name=f"fingerprint-{device.ip}", coro_factory=task))
+            await queue.put(
+                TaskItem(name=f"fingerprint-{device.ip}", coro_factory=task)
+            )
 
         for device in devices:
             await schedule(device)
@@ -276,7 +292,9 @@ class ScannerEngine:
         await queue.stop(worker_count)
         await queue.wait_workers()
 
-    async def _run_router_exploration(self, devices: List[Device], session: aiohttp.ClientSession) -> None:
+    async def _run_router_exploration(
+        self, devices: List[Device], session: aiohttp.ClientSession
+    ) -> None:
         """Perform router discovery and safety checks.
 
         Args:
@@ -329,7 +347,9 @@ class ScannerEngine:
                 await self._rate_limiter.acquire()
                 await self._router_explorer.explore(device, session, self._rate_limiter)
 
-            await queue.put(TaskItem(name=f"router-explore-{device.ip}", coro_factory=task))
+            await queue.put(
+                TaskItem(name=f"router-explore-{device.ip}", coro_factory=task)
+            )
 
         for device in devices:
             await schedule(device)

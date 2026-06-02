@@ -66,7 +66,9 @@ def sample_devices() -> List[Device]:
                 os_guess="linux" if i % 2 == 0 else "windows",
                 open_ports=[22, 80],
                 services=[
-                    Service(port=80, protocol="tcp", service_name="http", version="1.0"),
+                    Service(
+                        port=80, protocol="tcp", service_name="http", version="1.0"
+                    ),
                     Service(port=22, protocol="tcp", service_name="ssh", version="7.9"),
                 ],
                 vulnerabilities=[

@@ -25,7 +25,11 @@ async def test_cve_correlation(mock_exploit_db_csv, tmp_path):
     await correlator._parse_csv(mock_exploit_db_csv)
     correlator._build_index()
     vuln = Vulnerability(
-        cve_id="CVE-2020-1005", description="Example", severity="high", affected_service="http", exploit_db_id=None
+        cve_id="CVE-2020-1005",
+        description="Example",
+        severity="high",
+        affected_service="http",
+        exploit_db_id=None,
     )
     matches = await correlator.correlate_vulnerability(vuln)
     assert matches
@@ -93,7 +97,9 @@ async def test_no_match_returns_empty(mock_exploit_db_csv, tmp_path):
     correlator = ExploitCorrelator(cache_dir=str(tmp_path))
     await correlator._parse_csv(mock_exploit_db_csv)
     correlator._build_index()
-    service = Service(port=80, protocol="tcp", service_name="NoSuchService", version="0.0")
+    service = Service(
+        port=80, protocol="tcp", service_name="NoSuchService", version="0.0"
+    )
     matches = await correlator.correlate_service(service)
     assert isinstance(matches, list)
 
@@ -127,7 +133,9 @@ async def test_exploit_correlator_deep():
     c = ExploitCorrelator()
     dev = Device("10.0.0.1")
     dev.services = [Service(80, "tcp", "http", "nginx")]
-    dev.vulnerabilities = [Vulnerability("CVE-2021-1234", "Test Vuln", "high", "http", None)]
+    dev.vulnerabilities = [
+        Vulnerability("CVE-2021-1234", "Test Vuln", "high", "http", None)
+    ]
 
     # Mock all internal methods that do networking or heavy IO
     c.correlate_vulnerabilities = AsyncMock()
