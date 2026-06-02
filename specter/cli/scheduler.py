@@ -24,7 +24,11 @@ def run_scheduled_scan(target: str, **kwargs):
 
 
 def add_schedule(
-    schedule_type: str, time_str: str, target: str, day: Optional[str] = None, date: Optional[str] = None
+    schedule_type: str,
+    time_str: str,
+    target: str,
+    day: Optional[str] = None,
+    date: Optional[str] = None,
 ):
     """Save configuration and block to run scheduler."""
     # Ensure dir exists

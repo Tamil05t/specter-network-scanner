@@ -300,7 +300,9 @@ class PortScanner:
                 if probe:
                     writer.write(probe)
                     await writer.drain()
-                banner_bytes = await asyncio.wait_for(reader.read(512), timeout=self._timeout)
+                banner_bytes = await asyncio.wait_for(
+                    reader.read(512), timeout=self._timeout
+                )
             except Exception:
                 banner_bytes = b""
             finally:
