@@ -40,7 +40,7 @@ def test_cli_scan_help():
         >>> # Example usage of test_cli_scan_help
         >>> pass"""
     runner = CliRunner()
-    result = runner.invoke(main.cli, ["scan", "--help"])
+    result = runner.invoke(main.cli, ["scan", "--help"], catch_exceptions=False)
     assert result.exit_code == 0
 
 
